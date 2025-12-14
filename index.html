@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Earth & Moon Gesture Zoom</title>
+
+<style>
+/* ===== BASIC LAYOUT ===== */
+body {
+  margin: 0;
+  overflow: hidden;
+  background: black;
+  touch-action: none;
+}
+
+/* Small camera preview */
+#cameraBox {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  width: 120px;
+  height: 160px;
+  border: 2px solid #00ffff;
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 10;
+}
+
+#cameraBox video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+#hint {
+  position: fixed;
+  bottom: 10px;
+  width: 100%;
+  text-align: center;
+  font-family: monospace;
+  color: #00ffff;
+  font-size: 12px;
+  opacity: 0.85;
+  z-index: 10;
+}
+</style>
+
+<!-- THREE.JS -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+
+<!-- MEDIAPIPE -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+</head>
+
+<body>
+
+<div id="cameraBox">
+  <video id="video" autoplay playsinline></video>
+</div>
+
+<div id="hint">
+Hand FAR = Zoom Out | Hand NEAR = Zoom In (Earth Layer)
+</div>
+
+<script>
+/* =====================================================
+   THREE.JS SCENE SETUP
+===================================================== */
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(
+  60,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  3000
+);
+camera.position.z = 900;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+document.body.appendChild(renderer.domElement);
+
+/* =====================================================
+   LIGHTING
+===================================================== */
+const ambientLight = new THREE.AmbientLight(0x404040, 1);
+scene.add(ambientLight);
+
+const sunLight = new THREE.PointLight(0xffffff, 1.2);
+sunLight.position.set(300, 200, 300);
+scene.add(sunLight);
+
+/* =====================================================
+   EARTH
+===================================================== */
+const earthGeometry = new THREE.SphereGeometry(120, 40, 40);
+
+// Space view material
+const earthSpaceMaterial = new THREE.MeshStandardMaterial({
+  color: 0x1e6cff,
+  roughness: 0.6,
+  metalness: 0.1
+});
+
+// Near view “layer” material
+const earthLayerMaterial = new THREE.MeshStandardMaterial({
+  color: 0x3cffaa,
+  wireframe: true
+});
+
+const earth = new THREE.Mesh(earthGeometry, earthSpaceMaterial);
+scene.add(earth);
+
+/* =====================================================
+   MOON
+===================================================== */
+const moonGeometry = new THREE.SphereGeometry(32, 24, 24);
+const moonMaterial = new THREE.MeshStandardMaterial({
+  color: 0xbfbfbf
+});
+const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+scene.add(moon);
+
+let moonAngle = 0;
+
+/* =====================================================
+   HAND TRACKING
+===================================================== */
+const video = document.getElementById("video");
+
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream => video.srcObject = stream)
+  .catch(() => alert("Camera permission required"));
+
+const hands = new Hands({
+  locateFile: file =>
+    `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+});
+
+hands.setOptions({
+  maxNumHands: 1,
+  modelComplexity: 0,
+  minDetectionConfidence: 0.6,
+  minTrackingConfidence: 0.6
+});
+
+let targetZoom = 900;
+let handDetected = false;
+
+hands.onResults(results => {
+  if (!results.multiHandLandmarks.length) {
+    handDetected = false;
+    return;
+  }
+
+  handDetected = true;
+
+  const hand = results.multiHandLandmarks[0];
+
+  // Hand size = distance from camera
+  const handSize = Math.abs(hand[5].x - hand[17].x);
+
+  // Convert to zoom value (smooth range)
+  let zoom = 1000 - handSize * 2200;
+  zoom = Math.max(220, Math.min(1000, zoom));
+
+  targetZoom = zoom;
+});
+
+const cameraFeed = new Camera(video, {
+  onFrame: async () => {
+    await hands.send({ image: video });
+  },
+  width: 640,
+  height: 480
+});
+cameraFeed.start();
+
+/* =====================================================
+   ANIMATION LOOP
+===================================================== */
+function animate() {
+  requestAnimationFrame(animate);
+
+  // Smooth zoom (very slow & stable)
+  if (handDetected) {
+    camera.position.z += (targetZoom - camera.position.z) * 0.04;
+  }
+
+  // Earth material switch (layer effect)
+  if (camera.position.z < 350) {
+    earth.material = earthLayerMaterial;
+  } else {
+    earth.material = earthSpaceMaterial;
+  }
+
+  // Earth rotation (slow)
+  earth.rotation.y += 0.0008;
+
+  // Moon orbit
+  moonAngle += 0.004;
+  moon.position.set(
+    Math.cos(moonAngle) * 260,
+    0,
+    Math.sin(moonAngle) * 260
+  );
+
+  renderer.render(scene, camera);
+}
+
+animate();
+
+/* =====================================================
+   RESIZE HANDLER
+===================================================== */
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+
+</body>
+  </html>
