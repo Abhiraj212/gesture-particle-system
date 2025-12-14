@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gesture Controlled Object</title>
+
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background: black;
+}
+#hint {
+  position: fixed;
+  bottom: 10px;
+  width: 100%;
+  text-align: center;
+  color: #00ffff;
+  font-family: monospace;
+  font-size: 12px;
+}
+video { display: none; }
+</style>
+
+<!-- THREE -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+
+<!-- MEDIAPIPE -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+</head>
+
+<body>
+<div id="hint">
+Far = Small | Near = Big | 2 Fingers = Move | Swipe R = Shape | Swipe L = Color
+</div>
+<video id="video" autoplay playsinline></video>
+
+<script>
+/* ================= THREE SETUP ================= */
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(
+  60, innerWidth / innerHeight, 0.1, 2000
+);
+camera.position.z = 600;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(devicePixelRatio);
+document.body.appendChild(renderer.domElement);
+
+/* ================= LIGHT ================= */
+scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(200, 200, 300);
+scene.add(light);
+
+/* ================= OBJECT ================= */
+const shapes = [
+  new THREE.BoxGeometry(120, 120, 120),
+  new THREE.SphereGeometry(80, 16, 16),
+  new THREE.ConeGeometry(70, 140, 16)
+];
+
+let shapeIndex = 0;
+
+let material = new THREE.MeshStandardMaterial({ color: 0x00ffff });
+let object = new THREE.Mesh(shapes[shapeIndex], material);
+scene.add(object);
+
+/* ================= HAND TRACKING ================= */
+const video = document.getElementById("video");
+
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(s => video.srcObject = s);
+
+const hands = new Hands({
+  locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+});
+
+hands.setOptions({
+  maxNumHands: 1,
+  modelComplexity: 0,
+  minDetectionConfidence: 0.6,
+  minTrackingConfidence: 0.6
+});
+
+let handDetected = false;
+let targetScale = 1;
+let moveX = 0, moveY = 0;
+let prevX = null;
+let lastSwipe = 0;
+let hue = 0;
+
+hands.onResults(res => {
+  if (!res.multiHandLandmarks.length) {
+    handDetected = false;
+    return;
+  }
+
+  handDetected = true;
+  const h = res.multiHandLandmarks[0];
+
+  /* -------- DISTANCE (SIZE) -------- */
+  const handSize = Math.abs(h[5].x - h[17].x);
+  targetScale = THREE.MathUtils.clamp(handSize * 6, 0.6, 1.8);
+
+  /* -------- TWO FINGER MOVE -------- */
+  const index = h[8];
+  const middle = h[12];
+  const centerX = (index.x + middle.x) / 2 - 0.5;
+  const centerY = (index.y + middle.y) / 2 - 0.5;
+  moveX = centerX * 2;
+  moveY = -centerY * 2;
+
+  /* -------- SWIPE DETECT -------- */
+  if (prevX !== null && Date.now() - lastSwipe > 1200) {
+    const dx = h[0].x - prevX;
+    if (dx > 0.15) {
+      // Swipe RIGHT → change shape
+      shapeIndex = (shapeIndex + 1) % shapes.length;
+      object.geometry = shapes[shapeIndex];
+      lastSwipe = Date.now();
+    }
+    if (dx < -0.15) {
+      // Swipe LEFT → change color
+      hue += 0.2;
+      object.material.color.setHSL(hue % 1, 1, 0.6);
+      lastSwipe = Date.now();
+    }
+  }
+  prevX = h[0].x;
+});
+
+new Camera(video, {
+  onFrame: async () => await hands.send({ image: video }),
+  width: 320,
+  height: 240
+}).start();
+
+/* ================= ANIMATION ================= */
+function animate() {
+  requestAnimationFrame(animate);
+
+  if (!handDetected) {
+    renderer.render(scene, camera);
+    return;
+  }
+
+  // smooth scale
+  object.scale.lerp(
+    new THREE.Vector3(targetScale, targetScale, targetScale),
+    0.05
+  );
+
+  // slow movement
+  object.position.x += moveX * 0.05;
+  object.position.y += moveY * 0.05;
+
+  renderer.render(scene, camera);
+}
+animate();
+
+/* ================= RESIZE ================= */
+addEventListener("resize", () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+
+</body>
+  </html>
