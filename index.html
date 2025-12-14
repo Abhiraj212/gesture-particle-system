@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fast Gesture Object</title>
+
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background: black;
+}
+
+/* Camera preview (your face) */
+#cameraBox {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  width: 100px;
+  height: 140px;
+  border: 2px solid #00ffff;
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 10;
+}
+#cameraBox video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+#hint {
+  position: fixed;
+  bottom: 8px;
+  width: 100%;
+  text-align: center;
+  color: #00ffff;
+  font-family: monospace;
+  font-size: 11px;
+}
+</style>
+
+<!-- THREE -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+
+<!-- MEDIAPIPE -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+</head>
+
+<body>
+
+<div id="cameraBox">
+  <video id="video" autoplay playsinline></video>
+</div>
+
+<div id="hint">
+Far=Small | Near=Big | 2 Fingers=Move | Swipe R=Shape | Swipe L=Color
+</div>
+
+<script>
+/* ================= THREE ================= */
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(
+  60, innerWidth / innerHeight, 0.1, 2000
+);
+camera.position.z = 600;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(devicePixelRatio);
+document.body.appendChild(renderer.domElement);
+
+/* ================= LIGHT ================= */
+scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(200, 200, 300);
+scene.add(light);
+
+/* ================= OBJECT ================= */
+const geometries = [
+  new THREE.BoxGeometry(60, 60, 60),
+  new THREE.SphereGeometry(40, 14, 14),
+  new THREE.ConeGeometry(40, 80, 14)
+];
+
+let geoIndex = 0;
+const material = new THREE.MeshStandardMaterial({ color: 0x00ffff });
+const obj = new THREE.Mesh(geometries[geoIndex], material);
+obj.scale.set(0.6, 0.6, 0.6); // SMALL by default
+scene.add(obj);
+
+/* ================= HAND TRACKING ================= */
+const video = document.getElementById("video");
+
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(s => video.srcObject = s);
+
+const hands = new Hands({
+  locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+});
+
+hands.setOptions({
+  maxNumHands: 1,
+  modelComplexity: 0,
+  minDetectionConfidence: 0.6,
+  minTrackingConfidence: 0.6
+});
+
+let handDetected = false;
+let targetScale = 0.6;
+let moveX = 0, moveY = 0;
+let prevX = null;
+let lastSwipe = 0;
+let hue = 0;
+
+hands.onResults(res => {
+  if (!res.multiHandLandmarks.length) {
+    handDetected = false;
+    return;
+  }
+
+  handDetected = true;
+  const h = res.multiHandLandmarks[0];
+
+  /* ---- DISTANCE → SIZE (FAST) ---- */
+  const handSize = Math.abs(h[5].x - h[17].x);
+  targetScale = THREE.MathUtils.clamp(handSize * 5, 0.4, 1.4);
+
+  /* ---- TWO FINGER MOVE (FAST) ---- */
+  const cx = ((h[8].x + h[12].x) / 2 - 0.5) * 3;
+  const cy = -((h[8].y + h[12].y) / 2 - 0.5) * 3;
+  moveX = cx;
+  moveY = cy;
+
+  /* ---- SWIPE ---- */
+  if (prevX !== null && Date.now() - lastSwipe > 900) {
+    const dx = h[0].x - prevX;
+
+    if (dx > 0.15) {
+      geoIndex = (geoIndex + 1) % geometries.length;
+      obj.geometry = geometries[geoIndex];
+      lastSwipe = Date.now();
+    }
+    if (dx < -0.15) {
+      hue += 0.15;
+      obj.material.color.setHSL(hue % 1, 1, 0.6);
+      lastSwipe = Date.now();
+    }
+  }
+  prevX = h[0].x;
+});
+
+new Camera(video, {
+  onFrame: async () => await hands.send({ image: video }),
+  width: 320,
+  height: 240
+}).start();
+
+/* ================= ANIMATE ================= */
+function animate() {
+  requestAnimationFrame(animate);
+
+  if (!handDetected) {
+    renderer.render(scene, camera);
+    return;
+  }
+
+  // FAST scale
+  obj.scale.lerp(
+    new THREE.Vector3(targetScale, targetScale, targetScale),
+    0.15
+  );
+
+  // FAST movement
+  obj.position.x += moveX * 0.08;
+  obj.position.y += moveY * 0.08;
+
+  renderer.render(scene, camera);
+}
+animate();
+
+/* ================= RESIZE ================= */
+addEventListener("resize", () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+
+</body>
+  </html>
