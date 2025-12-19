@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Fast Gesture Object</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hand Controlled Music Visualizer</title>
 
 <style>
 body {
@@ -12,11 +12,11 @@ body {
   background: black;
 }
 
-/* Camera preview (your face) */
+/* Face preview */
 #cameraBox {
   position: fixed;
   top: 10px;
-  left: 10px;
+  right: 10px;
   width: 100px;
   height: 140px;
   border: 2px solid #00ffff;
@@ -57,7 +57,7 @@ body {
 </div>
 
 <div id="hint">
-Far=Small | Near=Big | 2 Fingers=Move | Swipe R=Shape | Swipe L=Color
+Near = Strong Beats | Move = Rotate | Swipe R = Mode | Swipe L = Color
 </div>
 
 <script>
@@ -67,7 +67,7 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
   60, innerWidth / innerHeight, 0.1, 2000
 );
-camera.position.z = 600;
+camera.position.z = 500;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(innerWidth, innerHeight);
@@ -76,26 +76,35 @@ document.body.appendChild(renderer.domElement);
 
 /* ================= LIGHT ================= */
 scene.add(new THREE.AmbientLight(0xffffff, 1.2));
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(200, 200, 300);
-scene.add(light);
 
-/* ================= OBJECT ================= */
-const geometries = [
-  new THREE.BoxGeometry(60, 60, 60),
-  new THREE.SphereGeometry(40, 14, 14),
-  new THREE.ConeGeometry(40, 80, 14)
-];
+/* ================= VISUALIZER ================= */
+const BAR_COUNT = 32;
+const bars = [];
+let mode = 0;
+let hue = 0;
 
-let geoIndex = 0;
-const material = new THREE.MeshStandardMaterial({ color: 0x00ffff });
-const obj = new THREE.Mesh(geometries[geoIndex], material);
-obj.scale.set(0.6, 0.6, 0.6); // SMALL by default
-scene.add(obj);
+const group = new THREE.Group();
+scene.add(group);
+
+for (let i = 0; i < BAR_COUNT; i++) {
+  const geo = new THREE.BoxGeometry(8, 40, 8);
+  const mat = new THREE.MeshStandardMaterial({ color: 0x00ffff });
+  const bar = new THREE.Mesh(geo, mat);
+
+  const angle = (i / BAR_COUNT) * Math.PI * 2;
+  bar.position.set(
+    Math.cos(angle) * 120,
+    0,
+    Math.sin(angle) * 120
+  );
+  bar.lookAt(0, 0, 0);
+
+  bars.push(bar);
+  group.add(bar);
+}
 
 /* ================= HAND TRACKING ================= */
 const video = document.getElementById("video");
-
 navigator.mediaDevices.getUserMedia({ video: true })
   .then(s => video.srcObject = s);
 
@@ -111,11 +120,10 @@ hands.setOptions({
 });
 
 let handDetected = false;
-let targetScale = 0.6;
-let moveX = 0, moveY = 0;
+let energy = 0.3;
+let rotateSpeed = 0;
 let prevX = null;
 let lastSwipe = 0;
-let hue = 0;
 
 hands.onResults(res => {
   if (!res.multiHandLandmarks.length) {
@@ -126,28 +134,25 @@ hands.onResults(res => {
   handDetected = true;
   const h = res.multiHandLandmarks[0];
 
-  /* ---- DISTANCE → SIZE (FAST) ---- */
+  // Distance → energy
   const handSize = Math.abs(h[5].x - h[17].x);
-  targetScale = THREE.MathUtils.clamp(handSize * 5, 0.4, 1.4);
+  energy = THREE.MathUtils.clamp(handSize * 4, 0.2, 1.5);
 
-  /* ---- TWO FINGER MOVE (FAST) ---- */
-  const cx = ((h[8].x + h[12].x) / 2 - 0.5) * 3;
-  const cy = -((h[8].y + h[12].y) / 2 - 0.5) * 3;
-  moveX = cx;
-  moveY = cy;
+  // Movement → rotation
+  rotateSpeed = (h[0].x - 0.5) * 0.05;
 
-  /* ---- SWIPE ---- */
+  // Swipe
   if (prevX !== null && Date.now() - lastSwipe > 900) {
     const dx = h[0].x - prevX;
-
     if (dx > 0.15) {
-      geoIndex = (geoIndex + 1) % geometries.length;
-      obj.geometry = geometries[geoIndex];
+      mode = (mode + 1) % 2;
       lastSwipe = Date.now();
     }
     if (dx < -0.15) {
       hue += 0.15;
-      obj.material.color.setHSL(hue % 1, 1, 0.6);
+      bars.forEach(b =>
+        b.material.color.setHSL(hue % 1, 1, 0.6)
+      );
       lastSwipe = Date.now();
     }
   }
@@ -161,23 +166,25 @@ new Camera(video, {
 }).start();
 
 /* ================= ANIMATE ================= */
+let t = 0;
 function animate() {
   requestAnimationFrame(animate);
+  t += 0.05;
 
-  if (!handDetected) {
-    renderer.render(scene, camera);
-    return;
+  bars.forEach((bar, i) => {
+    const wave =
+      mode === 0
+        ? Math.sin(t + i)
+        : Math.cos(t * 1.5 + i);
+
+    bar.scale.y += ((wave * energy + 1.2) - bar.scale.y) * 0.2;
+  });
+
+  if (handDetected) {
+    group.rotation.y += rotateSpeed;
+  } else {
+    group.rotation.y += 0.002; // idle
   }
-
-  // FAST scale
-  obj.scale.lerp(
-    new THREE.Vector3(targetScale, targetScale, targetScale),
-    0.15
-  );
-
-  // FAST movement
-  obj.position.x += moveX * 0.08;
-  obj.position.y += moveY * 0.08;
 
   renderer.render(scene, camera);
 }
@@ -192,4 +199,4 @@ addEventListener("resize", () => {
 </script>
 
 </body>
-  </html>
+</html>
