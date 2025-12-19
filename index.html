@@ -1,148 +1,219 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>All Hand Gesture Ideas</title>
+<title>SR Fashion | Seema Boutique</title>
 
 <style>
-body { margin:0; overflow:hidden; background:black; }
-#ui {
-  position: fixed;
-  top: 5px;
-  left: 5px;
-  z-index: 20;
+:root{
+  --bg:#0f0f14;
+  --card:#161622;
+  --accent:#22d3ee;
+  --pink:#f472b6;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
 }
-#ui button {
-  margin: 2px;
-  padding: 6px 8px;
-  font-size: 11px;
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto;
+  background:var(--bg);
+  color:var(--text);
 }
-#cam {
-  position: fixed;
-  right: 5px;
-  top: 5px;
-  width: 90px;
-  height: 120px;
-  border: 2px solid cyan;
+
+/* ===== HEADER ===== */
+header{
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:rgba(15,15,20,.9);
+  backdrop-filter: blur(8px);
+  border-bottom:1px solid #222;
 }
-#cam video {
+
+nav{
+  display:grid;
+  grid-template-columns: auto 1fr auto;
+  align-items:center;
+  padding:12px 16px;
+}
+
+/* Left brand */
+.brand-left{
+  font-size:16px;
+  font-weight:700;
+  color:var(--accent);
+}
+
+/* Center brand */
+.brand-center{
+  text-align:center;
+  font-size:18px;
+  font-weight:700;
+  color:var(--pink);
+}
+
+/* Menu */
+.menu a{
+  margin-left:12px;
+  font-size:13px;
+  color:var(--muted);
+}
+.menu a:hover{color:var(--accent)}
+
+/* ===== SECTIONS ===== */
+section{
+  padding:48px 16px;
+  max-width:1100px;
+  margin:auto;
+}
+
+.card{
+  background:var(--card);
+  border-radius:14px;
+  padding:20px;
+  margin-top:20px;
+}
+
+h2{
+  margin-top:0;
+  color:var(--accent);
+}
+
+.btn{
+  display:inline-block;
+  padding:10px 14px;
+  border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--pink));
+  color:#000;
+  font-weight:600;
+  margin-top:10px;
+}
+
+input,textarea,select{
   width:100%;
-  height:100%;
-  object-fit:cover;
-  transform: scaleX(-1);
+  padding:10px;
+  margin-top:8px;
+  background:#0f0f18;
+  border:1px solid #222;
+  border-radius:8px;
+  color:var(--text);
+}
+
+footer{
+  text-align:center;
+  padding:20px;
+  color:var(--muted);
+  font-size:12px;
+}
+
+/* ===== MOBILE ===== */
+@media(max-width:600px){
+  .brand-center{font-size:16px}
+  .menu a{margin-left:8px}
 }
 </style>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 </head>
 
 <body>
 
-<div id="ui">
-<button onclick="mode=1">1 Cursor</button>
-<button onclick="mode=2">2 Draw</button>
-<button onclick="mode=3">3 Music</button>
-<button onclick="mode=4">4 Portal</button>
-<button onclick="mode=5">5 Physics</button>
-<button onclick="mode=6">6 Face FX</button>
-<button onclick="mode=7">7 Menu</button>
-</div>
+<header>
+  <nav>
+    <!-- LEFT -->
+    <div class="brand-left">SR Fashion</div>
 
-<div id="cam"><video id="video" autoplay playsinline></video></div>
+    <!-- CENTER -->
+    <div class="brand-center">Seema Boutique</div>
+
+    <!-- RIGHT -->
+    <div class="menu">
+      <a href="#home">Home</a>
+      <a href="#services">Services</a>
+      <a href="#classes">Classes</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </nav>
+</header>
+
+<!-- ===== HOME ===== -->
+<section id="home">
+  <h2>Welcome</h2>
+  <div class="card">
+    <p>
+      Seema Boutique is a women-only tailoring & fashion studio offering
+      custom stitching, designer outfits, and professional stitching classes.
+    </p>
+  </div>
+</section>
+
+<!-- ===== SERVICES ===== -->
+<section id="services">
+  <h2>Tailoring Services (Women Only)</h2>
+  <div class="card">
+    <ul>
+      <li>Blouse Stitching</li>
+      <li>Suit & Salwar Stitching</li>
+      <li>Lehenga & Bridal Wear</li>
+      <li>Alteration & Fitting</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== CLASSES ===== -->
+<section id="classes">
+  <h2>Stitching Classes</h2>
+  <div class="card">
+    <p>
+      Learn professional stitching from basic to advanced.
+      Certificates provided after completion.
+    </p>
+  </div>
+</section>
+
+<!-- ===== ONLINE ORDER ===== -->
+<section id="order">
+  <h2>Online Order</h2>
+  <div class="card">
+    <form onsubmit="sendWhatsApp(event)">
+      <input placeholder="Your Name" required>
+      <input placeholder="Dress Type" required>
+      <select>
+        <option>Measurements Now</option>
+        <option>Send Measurements Later</option>
+      </select>
+      <textarea placeholder="Extra Notes"></textarea>
+      <button class="btn">Send on WhatsApp</button>
+    </form>
+  </div>
+</section>
+
+<!-- ===== CONTACT ===== -->
+<section id="contact">
+  <h2>Contact</h2>
+  <div class="card">
+    <p>📍 Seema Boutique, Himachal Pradesh</p>
+    <p>📞 9XXXXXXXXX</p>
+  </div>
+</section>
+
+<footer>
+  © SR Fashion | Seema Boutique
+</footer>
 
 <script>
-/* ================= BASIC SETUP ================= */
-let mode = 1;
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000);
-camera.position.z = 400;
-
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth, innerHeight);
-document.body.appendChild(renderer.domElement);
-
-scene.add(new THREE.AmbientLight(0xffffff,1));
-
-/* ================= OBJECTS ================= */
-let mainObj = new THREE.Mesh(
-  new THREE.SphereGeometry(30,16,16),
-  new THREE.MeshStandardMaterial({color:0x00ffff})
-);
-scene.add(mainObj);
-
-/* ================= HAND TRACKING ================= */
-const video = document.getElementById("video");
-navigator.mediaDevices.getUserMedia({video:true}).then(s=>video.srcObject=s);
-
-const hands = new Hands({
-  locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
-});
-hands.setOptions({maxNumHands:1, modelComplexity:0});
-
-let hx=0, hy=0, hand=false;
-
-hands.onResults(r=>{
-  if(!r.multiHandLandmarks.length){hand=false;return;}
-  hand=true;
-  const h=r.multiHandLandmarks[0];
-  hx=h[0].x-0.5;
-  hy=-(h[0].y-0.5);
-});
-
-new Camera(video,{
-  onFrame: async()=>await hands.send({image:video}),
-  width:320,height:240
-}).start();
-
-/* ================= ANIMATION ================= */
-let t=0;
-function animate(){
-  requestAnimationFrame(animate);
-  t+=0.05;
-
-  if(!hand){ renderer.render(scene,camera); return; }
-
-  if(mode===1){ // Cursor
-    mainObj.position.x=hx*300;
-    mainObj.position.y=hy*300;
-  }
-
-  if(mode===2){ // Drawing
-    mainObj.scale.set(1+Math.abs(hx),1,1);
-  }
-
-  if(mode===3){ // Music
-    mainObj.scale.y=1+Math.sin(t)*2;
-  }
-
-  if(mode===4){ // Portal
-    mainObj.rotation.y+=0.03;
-  }
-
-  if(mode===5){ // Physics
-    mainObj.position.y+=hy*5;
-  }
-
-  if(mode===6){ // Face FX
-    mainObj.scale.set(1+Math.abs(hy)*2,1+Math.abs(hy)*2,1);
-  }
-
-  if(mode===7){ // Menu
-    mainObj.rotation.x=hx*2;
-  }
-
-  renderer.render(scene,camera);
+function sendWhatsApp(e){
+  e.preventDefault();
+  const f = e.target;
+  const msg =
+    "Name: " + f[0].value +
+    "%0ADress: " + f[1].value +
+    "%0AMeasurement: " + f[2].value +
+    "%0ANotes: " + f[3].value;
+  window.open("https://wa.me/91XXXXXXXXXX?text="+msg);
 }
-animate();
-
-addEventListener("resize",()=>{
-  camera.aspect=innerWidth/innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth,innerHeight);
-});
 </script>
 
 </body>
