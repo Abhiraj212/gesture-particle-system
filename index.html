@@ -1,200 +1,147 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hand Controlled Music Visualizer</title>
+<title>All Hand Gesture Ideas</title>
 
 <style>
-body {
-  margin: 0;
-  overflow: hidden;
-  background: black;
-}
-
-/* Face preview */
-#cameraBox {
+body { margin:0; overflow:hidden; background:black; }
+#ui {
   position: fixed;
-  top: 10px;
-  right: 10px;
-  width: 100px;
-  height: 140px;
-  border: 2px solid #00ffff;
-  border-radius: 8px;
-  overflow: hidden;
-  z-index: 10;
+  top: 5px;
+  left: 5px;
+  z-index: 20;
 }
-#cameraBox video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform: scaleX(-1);
-}
-
-#hint {
-  position: fixed;
-  bottom: 8px;
-  width: 100%;
-  text-align: center;
-  color: #00ffff;
-  font-family: monospace;
+#ui button {
+  margin: 2px;
+  padding: 6px 8px;
   font-size: 11px;
+}
+#cam {
+  position: fixed;
+  right: 5px;
+  top: 5px;
+  width: 90px;
+  height: 120px;
+  border: 2px solid cyan;
+}
+#cam video {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transform: scaleX(-1);
 }
 </style>
 
-<!-- THREE -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-
-<!-- MEDIAPIPE -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 </head>
 
 <body>
 
-<div id="cameraBox">
-  <video id="video" autoplay playsinline></video>
+<div id="ui">
+<button onclick="mode=1">1 Cursor</button>
+<button onclick="mode=2">2 Draw</button>
+<button onclick="mode=3">3 Music</button>
+<button onclick="mode=4">4 Portal</button>
+<button onclick="mode=5">5 Physics</button>
+<button onclick="mode=6">6 Face FX</button>
+<button onclick="mode=7">7 Menu</button>
 </div>
 
-<div id="hint">
-Near = Strong Beats | Move = Rotate | Swipe R = Mode | Swipe L = Color
-</div>
+<div id="cam"><video id="video" autoplay playsinline></video></div>
 
 <script>
-/* ================= THREE ================= */
+/* ================= BASIC SETUP ================= */
+let mode = 1;
 const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000);
+camera.position.z = 400;
 
-const camera = new THREE.PerspectiveCamera(
-  60, innerWidth / innerHeight, 0.1, 2000
-);
-camera.position.z = 500;
-
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
-/* ================= LIGHT ================= */
-scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+scene.add(new THREE.AmbientLight(0xffffff,1));
 
-/* ================= VISUALIZER ================= */
-const BAR_COUNT = 32;
-const bars = [];
-let mode = 0;
-let hue = 0;
-
-const group = new THREE.Group();
-scene.add(group);
-
-for (let i = 0; i < BAR_COUNT; i++) {
-  const geo = new THREE.BoxGeometry(8, 40, 8);
-  const mat = new THREE.MeshStandardMaterial({ color: 0x00ffff });
-  const bar = new THREE.Mesh(geo, mat);
-
-  const angle = (i / BAR_COUNT) * Math.PI * 2;
-  bar.position.set(
-    Math.cos(angle) * 120,
-    0,
-    Math.sin(angle) * 120
-  );
-  bar.lookAt(0, 0, 0);
-
-  bars.push(bar);
-  group.add(bar);
-}
+/* ================= OBJECTS ================= */
+let mainObj = new THREE.Mesh(
+  new THREE.SphereGeometry(30,16,16),
+  new THREE.MeshStandardMaterial({color:0x00ffff})
+);
+scene.add(mainObj);
 
 /* ================= HAND TRACKING ================= */
 const video = document.getElementById("video");
-navigator.mediaDevices.getUserMedia({ video: true })
-  .then(s => video.srcObject = s);
+navigator.mediaDevices.getUserMedia({video:true}).then(s=>video.srcObject=s);
 
 const hands = new Hands({
-  locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+  locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+});
+hands.setOptions({maxNumHands:1, modelComplexity:0});
+
+let hx=0, hy=0, hand=false;
+
+hands.onResults(r=>{
+  if(!r.multiHandLandmarks.length){hand=false;return;}
+  hand=true;
+  const h=r.multiHandLandmarks[0];
+  hx=h[0].x-0.5;
+  hy=-(h[0].y-0.5);
 });
 
-hands.setOptions({
-  maxNumHands: 1,
-  modelComplexity: 0,
-  minDetectionConfidence: 0.6,
-  minTrackingConfidence: 0.6
-});
-
-let handDetected = false;
-let energy = 0.3;
-let rotateSpeed = 0;
-let prevX = null;
-let lastSwipe = 0;
-
-hands.onResults(res => {
-  if (!res.multiHandLandmarks.length) {
-    handDetected = false;
-    return;
-  }
-
-  handDetected = true;
-  const h = res.multiHandLandmarks[0];
-
-  // Distance → energy
-  const handSize = Math.abs(h[5].x - h[17].x);
-  energy = THREE.MathUtils.clamp(handSize * 4, 0.2, 1.5);
-
-  // Movement → rotation
-  rotateSpeed = (h[0].x - 0.5) * 0.05;
-
-  // Swipe
-  if (prevX !== null && Date.now() - lastSwipe > 900) {
-    const dx = h[0].x - prevX;
-    if (dx > 0.15) {
-      mode = (mode + 1) % 2;
-      lastSwipe = Date.now();
-    }
-    if (dx < -0.15) {
-      hue += 0.15;
-      bars.forEach(b =>
-        b.material.color.setHSL(hue % 1, 1, 0.6)
-      );
-      lastSwipe = Date.now();
-    }
-  }
-  prevX = h[0].x;
-});
-
-new Camera(video, {
-  onFrame: async () => await hands.send({ image: video }),
-  width: 320,
-  height: 240
+new Camera(video,{
+  onFrame: async()=>await hands.send({image:video}),
+  width:320,height:240
 }).start();
 
-/* ================= ANIMATE ================= */
-let t = 0;
-function animate() {
+/* ================= ANIMATION ================= */
+let t=0;
+function animate(){
   requestAnimationFrame(animate);
-  t += 0.05;
+  t+=0.05;
 
-  bars.forEach((bar, i) => {
-    const wave =
-      mode === 0
-        ? Math.sin(t + i)
-        : Math.cos(t * 1.5 + i);
+  if(!hand){ renderer.render(scene,camera); return; }
 
-    bar.scale.y += ((wave * energy + 1.2) - bar.scale.y) * 0.2;
-  });
-
-  if (handDetected) {
-    group.rotation.y += rotateSpeed;
-  } else {
-    group.rotation.y += 0.002; // idle
+  if(mode===1){ // Cursor
+    mainObj.position.x=hx*300;
+    mainObj.position.y=hy*300;
   }
 
-  renderer.render(scene, camera);
+  if(mode===2){ // Drawing
+    mainObj.scale.set(1+Math.abs(hx),1,1);
+  }
+
+  if(mode===3){ // Music
+    mainObj.scale.y=1+Math.sin(t)*2;
+  }
+
+  if(mode===4){ // Portal
+    mainObj.rotation.y+=0.03;
+  }
+
+  if(mode===5){ // Physics
+    mainObj.position.y+=hy*5;
+  }
+
+  if(mode===6){ // Face FX
+    mainObj.scale.set(1+Math.abs(hy)*2,1+Math.abs(hy)*2,1);
+  }
+
+  if(mode===7){ // Menu
+    mainObj.rotation.x=hx*2;
+  }
+
+  renderer.render(scene,camera);
 }
 animate();
 
-/* ================= RESIZE ================= */
-addEventListener("resize", () => {
-  camera.aspect = innerWidth / innerHeight;
+addEventListener("resize",()=>{
+  camera.aspect=innerWidth/innerHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
+  renderer.setSize(innerWidth,innerHeight);
 });
 </script>
 
