@@ -2,195 +2,188 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>2D Maze Game</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3D Maze Game</title>
 
 <style>
 body {
   margin: 0;
-  overflow: hidden;
-  background: #000;
+  background: #0b0b14;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: monospace;
+  color: white;
 }
+
 #ui {
   position: fixed;
   top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+  text-align: center;
+  width: 100%;
   color: #00ffff;
-  font-family: monospace;
-  font-size: 14px;
-  z-index: 10;
+}
+
+canvas {
+  background: #111;
+  border: 4px solid #00ffff;
 }
 </style>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 </head>
 
 <body>
-<div id="ui">Level: <span id="level">1</span> | WASD Move | Mouse = Camera</div>
+
+<div id="ui">
+  Level: <span id="level">1</span> |
+  Coins: <span id="coins">0</span>
+</div>
+
+<canvas id="game" width="500" height="500"></canvas>
 
 <script>
 /* ================= BASIC SETUP ================= */
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x05050a);
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-const camera = new THREE.PerspectiveCamera(
-  70, window.innerWidth / window.innerHeight, 0.1, 1000
-);
-
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.shadowMap.enabled = true;
-document.body.appendChild(renderer.domElement);
-
-/* ================= LIGHT ================= */
-scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-
-const sun = new THREE.DirectionalLight(0xffffff, 1);
-sun.position.set(20, 30, 10);
-sun.castShadow = true;
-scene.add(sun);
-
-/* ================= GAME STATE ================= */
 let level = 1;
-let mazeSize = 7;
+let gridSize = 10;
+let tileSize = canvas.width / gridSize;
 let maze = [];
-let walls = [];
+let coins = [];
+let collected = 0;
 
 /* ================= PLAYER ================= */
-const player = new THREE.Mesh(
-  new THREE.BoxGeometry(0.6, 0.6, 0.6),
-  new THREE.MeshStandardMaterial({ color: 0x00ffff })
-);
-player.castShadow = true;
-scene.add(player);
-
-/* ================= GOAL ================= */
-const goal = new THREE.Mesh(
-  new THREE.BoxGeometry(0.6, 0.2, 0.6),
-  new THREE.MeshStandardMaterial({ color: 0x00ff66 })
-);
-scene.add(goal);
-
-/* ================= FLOOR ================= */
-const floorMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+const player = {
+  x: 0,
+  y: 0,
+  size: 0.6
+};
 
 /* ================= MAZE GENERATION ================= */
-function generateMaze(size) {
+function generateMaze() {
   maze = [];
-  for (let z = 0; z < size; z++) {
-    maze[z] = [];
-    for (let x = 0; x < size; x++) {
-      maze[z][x] = Math.random() > 0.7 ? 1 : 0;
+  coins = [];
+  collected = 0;
+
+  for (let y = 0; y < gridSize; y++) {
+    maze[y] = [];
+    for (let x = 0; x < gridSize; x++) {
+      maze[y][x] = Math.random() > 0.7 ? 1 : 0;
     }
   }
+
   maze[0][0] = 0;
-  maze[size - 1][size - 1] = 0;
+
+  // Coins
+  for (let i = 0; i < gridSize; i++) {
+    coins.push({
+      x: Math.floor(Math.random() * gridSize),
+      y: Math.floor(Math.random() * gridSize),
+      taken: false
+    });
+  }
+
+  player.x = 0;
+  player.y = 0;
+
+  document.getElementById("coins").textContent = collected;
+  document.getElementById("level").textContent = level;
 }
 
-function buildMaze() {
-  walls.forEach(w => scene.remove(w));
-  walls = [];
+/* ================= DRAW ================= */
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const half = mazeSize / 2;
-
-  for (let z = 0; z < mazeSize; z++) {
-    for (let x = 0; x < mazeSize; x++) {
-      if (maze[z][x] === 1) {
-        const wall = new THREE.Mesh(
-          new THREE.BoxGeometry(1, 1, 1),
-          new THREE.MeshStandardMaterial({ color: 0x3333ff })
-        );
-        wall.position.set(x - half, 0.5, z - half);
-        wall.castShadow = true;
-        scene.add(wall);
-        walls.push(wall);
+  // Maze
+  for (let y = 0; y < gridSize; y++) {
+    for (let x = 0; x < gridSize; x++) {
+      if (maze[y][x] === 1) {
+        ctx.fillStyle = "#3b82f6";
+        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
       }
     }
   }
 
-  const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(mazeSize, mazeSize),
-    floorMat
+  // Coins
+  coins.forEach(c => {
+    if (!c.taken) {
+      ctx.fillStyle = "#facc15";
+      ctx.beginPath();
+      ctx.arc(
+        c.x * tileSize + tileSize / 2,
+        c.y * tileSize + tileSize / 2,
+        tileSize * 0.25,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+    }
+  });
+
+  // Player
+  ctx.fillStyle = "#22d3ee";
+  ctx.fillRect(
+    player.x * tileSize + tileSize * 0.2,
+    player.y * tileSize + tileSize * 0.2,
+    tileSize * player.size,
+    tileSize * player.size
   );
-  floor.rotation.x = -Math.PI / 2;
-  floor.receiveShadow = true;
-  scene.add(floor);
 }
-
-/* ================= START LEVEL ================= */
-function startLevel() {
-  document.getElementById("level").textContent = level;
-  generateMaze(mazeSize);
-  buildMaze();
-
-  player.position.set(-mazeSize / 2, 0.3, -mazeSize / 2);
-  goal.position.set(
-    mazeSize / 2 - 1,
-    0.1,
-    mazeSize / 2 - 1
-  );
-
-  camera.position.set(0, mazeSize, mazeSize);
-  camera.lookAt(0, 0, 0);
-}
-
-startLevel();
 
 /* ================= CONTROLS ================= */
 const keys = {};
-window.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
-window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
-
-let mouseX = 0;
-window.addEventListener("mousemove", e => {
-  mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+window.addEventListener("keydown", e => {
+  keys[e.key.toLowerCase()] = true;
+});
+window.addEventListener("keyup", e => {
+  keys[e.key.toLowerCase()] = false;
 });
 
 /* ================= GAME LOOP ================= */
-function animate() {
-  requestAnimationFrame(animate);
+function update() {
+  let nx = player.x;
+  let ny = player.y;
 
-  const speed = 0.08;
-  const oldPos = player.position.clone();
+  if (keys["w"]) ny--;
+  if (keys["s"]) ny++;
+  if (keys["a"]) nx--;
+  if (keys["d"]) nx++;
 
-  if (keys["w"]) player.position.z -= speed;
-  if (keys["s"]) player.position.z += speed;
-  if (keys["a"]) player.position.x -= speed;
-  if (keys["d"]) player.position.x += speed;
+  if (
+    nx >= 0 &&
+    ny >= 0 &&
+    nx < gridSize &&
+    ny < gridSize &&
+    maze[ny][nx] === 0
+  ) {
+    player.x = nx;
+    player.y = ny;
+  }
 
-  // Wall collision
-  for (const w of walls) {
-    if (player.position.distanceTo(w.position) < 0.7) {
-      player.position.copy(oldPos);
-      break;
+  // Collect coins
+  coins.forEach(c => {
+    if (!c.taken && c.x === player.x && c.y === player.y) {
+      c.taken = true;
+      collected++;
+      document.getElementById("coins").textContent = collected;
     }
-  }
+  });
 
-  // Camera control
-  camera.position.x = Math.sin(mouseX) * mazeSize;
-  camera.position.z = Math.cos(mouseX) * mazeSize;
-  camera.lookAt(player.position);
-
-  // Win condition
-  if (player.position.distanceTo(goal.position) < 0.6) {
+  // Next level
+  if (coins.every(c => c.taken)) {
     level++;
-    mazeSize += 2;
-    startLevel();
+    gridSize += 2;
+    tileSize = canvas.width / gridSize;
+    generateMaze();
   }
 
-  renderer.render(scene, camera);
+  draw();
+  requestAnimationFrame(update);
 }
 
-animate();
-
-/* ================= RESIZE ================= */
-window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
+generateMaze();
+update();
 </script>
 
 </body>
