@@ -2,217 +2,181 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>2D Maze Game (Fixed)</title>
+<title>Insane Animated Homepage</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+/* RESET */
+* { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+html, body { height: 100%; overflow-x: hidden; font-family: 'Poppins', sans-serif; }
+
+/* BACKGROUND ANIMATION */
 body {
-  margin: 0;
-  background: #0b0b14;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-family: monospace;
+  background: linear-gradient(270deg, #0f0c29, #302b63, #24243e);
+  background-size: 600% 600%;
+  animation: bgMove 15s ease infinite;
   color: white;
 }
 
-#ui {
-  position: fixed;
-  top: 10px;
-  text-align: center;
-  width: 100%;
-  color: #00ffff;
+@keyframes bgMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-canvas {
-  background: ;#d415ba
-  border: 4px solid #00ffff;
+/* CUSTOM CURSOR */
+.cursor {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  background: radial-gradient(circle, #00fff0, transparent);
+  mix-blend-mode: difference;
+  transform: translate(-50%, -50%);
+  z-index: 999;
+}
+
+/* HERO */
+.hero {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+
+.hero h1 {
+  font-size: 4rem;
+  animation: glitch 2s infinite;
+}
+
+@keyframes glitch {
+  0% { text-shadow: 2px 2px #ff00c8; }
+  50% { text-shadow: -2px -2px #00fff0; }
+  100% { text-shadow: 2px 2px #ff00c8; }
+}
+
+.hero p {
+  margin-top: 15px;
+  opacity: 0.8;
+  animation: floatText 3s ease-in-out infinite;
+}
+
+@keyframes floatText {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* MAGNETIC BUTTON */
+.btn {
+  margin-top: 40px;
+  padding: 15px 40px;
+  border: 2px solid white;
+  border-radius: 50px;
+  background: transparent;
+  color: white;
+  font-size: 18px;
+  transition: 0.3s;
+  position: relative;
+}
+
+.btn:hover {
+  background: white;
+  color: black;
+  transform: scale(1.1);
+}
+
+/* FLOATING PARTICLES */
+.particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: floatParticle linear infinite;
+}
+
+@keyframes floatParticle {
+  from { transform: translateY(100vh); }
+  to { transform: translateY(-100vh); }
+}
+
+/* SCROLL SECTION */
+.section {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 3rem;
+  transition: transform 0.3s;
+}
+
+/* NOISE OVERLAY */
+.noise {
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 998;
 }
 </style>
 </head>
 
 <body>
 
-<div id="ui">
-  Level: <span id="level">1</span> |
-  Coins: <span id="coins">0</span>
+<div class="cursor"></div>
+<div class="noise"></div>
+
+<div class="hero">
+  <h1>WELCOME TO CHAOS ⚡</h1>
+  <p>Too many animations? Yes. On purpose 😎</p>
+  <button class="btn">Hover me 👀</button>
 </div>
 
-<canvas id="game" width="500" height="500"></canvas>
+<div class="section">Scroll = Motion 🌀</div>
+<div class="section">More Vibes 🔥</div>
+<div class="section">Still Scrolling? 😏</div>
 
 <script>
-/* ================= BASIC SETUP ================= */
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-
-let level = 1;
-let gridSize = 9;
-let tileSize = canvas.width / gridSize;
-let maze = [];
-let coins = [];
-let collected = 0;
-
-/* ================= PLAYER ================= */
-const player = { x: 0, y: 0 };
-
-/* ================= MAZE GENERATION ================= */
-function generateMaze() {
-  maze = [];
-  coins = [];
-  collected = 0;
-
-  const wallChance = Math.min(0.25 + level * 0.03, 0.45);
-
-  for (let y = 0; y < gridSize; y++) {
-    maze[y] = [];
-    for (let x = 0; x < gridSize; x++) {
-      maze[y][x] = Math.random() < wallChance ? 1 : 0;
-    }
-  }
-
-  maze[0][0] = 0;
-
-  player.x = 0;
-  player.y = 0;
-
-  spawnCoins();
-
-  document.getElementById("coins").textContent = collected;
-  document.getElementById("level").textContent = level;
-}
-
-/* ================= COIN SPAWN (FIXED) ================= */
-function spawnCoins() {
-  const coinCount = Math.min(3 + level, gridSize);
-  const used = new Set();
-
-  while (coins.length < coinCount) {
-    const x = Math.floor(Math.random() * gridSize);
-    const y = Math.floor(Math.random() * gridSize);
-
-    const key = `${x},${y}`;
-
-    if (
-      maze[y][x] === 0 &&
-      !(x === 0 && y === 0) &&
-      !used.has(key)
-    ) {
-      coins.push({ x, y, taken: false });
-      used.add(key);
-    }
-  }
-}
-
-/* ================= DRAW ================= */
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Maze
-  for (let y = 0; y < gridSize; y++) {
-    for (let x = 0; x < gridSize; x++) {
-      if (maze[y][x] === 1) {
-        ctx.fillStyle = "#8ce01d";
-        ctx.fillRect(
-          x * tileSize,
-          y * tileSize,
-          tileSize,
-          tileSize
-        );
-      }
-    }
-  }
-
-  // Coins
-  coins.forEach(c => {
-    if (!c.taken) {
-      ctx.fillStyle = "#facc15";
-      ctx.beginPath();
-      ctx.arc(
-        c.x * tileSize + tileSize / 2,
-        c.y * tileSize + tileSize / 2,
-        tileSize * 0.25,
-        0,
-        Math.PI * 2
-      );
-      ctx.fill();
-    }
-  });
-
-  // Player
-  ctx.fillStyle = "#22d3ee";
-  ctx.fillRect(
-    player.x * tileSize + tileSize * 0.2,
-    player.y * tileSize + tileSize * 0.2,
-    tileSize * 0.6,
-    tileSize * 0.6
-  );
-}
-
-/* ================= ONE-STEP MOVE ================= */
-function move(dx, dy) {
-  const nx = player.x + dx;
-  const ny = player.y + dy;
-
-  if (
-    nx >= 0 &&
-    ny >= 0 &&
-    nx < gridSize &&
-    ny < gridSize &&
-    maze[ny][nx] === 0
-  ) {
-    player.x = nx;
-    player.y = ny;
-  }
-
-  // Collect coins
-  coins.forEach(c => {
-    if (!c.taken && c.x === player.x && c.y === player.y) {
-      c.taken = true;
-      collected++;
-      document.getElementById("coins").textContent = collected;
-    }
-  });
-
-  // Next level
-  if (coins.every(c => c.taken)) {
-    level++;
-    gridSize += 2;
-    tileSize = canvas.width / gridSize;
-    generateMaze();
-  }
-
-  draw();
-}
-
-/* ================= KEYBOARD ================= */
-window.addEventListener("keydown", e => {
-  const k = e.key.toLowerCase();
-  if (k === "w") move(0, -1);
-  if (k === "s") move(0, 1);
-  if (k === "a") move(-1, 0);
-  if (k === "d") move(1, 0);
+/* CURSOR FOLLOW */
+const cursor = document.querySelector('.cursor');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
 });
 
-/* ================= CLICK / TOUCH ================= */
-canvas.addEventListener("click", e => {
-  const rect = canvas.getBoundingClientRect();
-  const cx = e.clientX - rect.left;
-  const cy = e.clientY - rect.top;
+/* PARTICLES */
+for (let i = 0; i < 80; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.style.left = Math.random() * 100 + 'vw';
+  p.style.animationDuration = (5 + Math.random() * 10) + 's';
+  document.body.appendChild(p);
+}
 
-  const dx = cx - (player.x * tileSize + tileSize / 2);
-  const dy = cy - (player.y * tileSize + tileSize / 2);
-
-  if (Math.abs(dx) > Math.abs(dy)) {
-    move(dx > 0 ? 1 : -1, 0);
-  } else {
-    move(0, dy > 0 ? 1 : -1);
-  }
+/* SCROLL INTERACTION */
+window.addEventListener('scroll', () => {
+  document.querySelectorAll('.section').forEach(sec => {
+    const speed = window.scrollY * 0.05;
+    sec.style.transform = `translateX(${speed}px) rotate(${speed / 5}deg)`;
+  });
 });
 
-/* ================= START ================= */
-generateMaze();
-draw();
+/* MAGNETIC BUTTON */
+const btn = document.querySelector('.btn');
+btn.addEventListener('mousemove', e => {
+  const rect = btn.getBoundingClientRect();
+  const x = e.clientX - rect.left - rect.width / 2;
+  const y = e.clientY - rect.top - rect.height / 2;
+  btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+});
+btn.addEventListener('mouseleave', () => {
+  btn.style.transform = '';
+});
 </script>
 
 </body>
