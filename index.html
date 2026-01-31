@@ -1,183 +1,1254 @@
-<!DOCTYPE html>
+
+html_code = '''<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Insane Animated Homepage</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-/* RESET */
-* { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
-html, body { height: 100%; overflow-x: hidden; font-family: 'Poppins', sans-serif; }
-
-/* BACKGROUND ANIMATION */
-body {
-  background: linear-gradient(270deg, #0f0c29, #302b63, #24243e);
-  background-size: 600% 600%;
-  animation: bgMove 15s ease infinite;
-  color: white;
-}
-
-@keyframes bgMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* CUSTOM CURSOR */
-.cursor {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  position: fixed;
-  pointer-events: none;
-  background: radial-gradient(circle, #00fff0, transparent);
-  mix-blend-mode: difference;
-  transform: translate(-50%, -50%);
-  z-index: 999;
-}
-
-/* HERO */
-.hero {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  position: relative;
-}
-
-.hero h1 {
-  font-size: 4rem;
-  animation: glitch 2s infinite;
-}
-
-@keyframes glitch {
-  0% { text-shadow: 2px 2px #ff00c8; }
-  50% { text-shadow: -2px -2px #00fff0; }
-  100% { text-shadow: 2px 2px #ff00c8; }
-}
-
-.hero p {
-  margin-top: 15px;
-  opacity: 0.8;
-  animation: floatText 3s ease-in-out infinite;
-}
-
-@keyframes floatText {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-/* MAGNETIC BUTTON */
-.btn {
-  margin-top: 40px;
-  padding: 15px 40px;
-  border: 2px solid white;
-  border-radius: 50px;
-  background: transparent;
-  color: white;
-  font-size: 18px;
-  transition: 0.3s;
-  position: relative;
-}
-
-.btn:hover {
-  background: white;
-  color: black;
-  transform: scale(1.1);
-}
-
-/* FLOATING PARTICLES */
-.particle {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  background: white;
-  border-radius: 50%;
-  opacity: 0.3;
-  animation: floatParticle linear infinite;
-}
-
-@keyframes floatParticle {
-  from { transform: translateY(100vh); }
-  to { transform: translateY(-100vh); }
-}
-
-/* SCROLL SECTION */
-.section {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 3rem;
-  transition: transform 0.3s;
-}
-
-/* NOISE OVERLAY */
-.noise {
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 998;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seema Boutique | Stitched with Love</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-pink: #ff85a2;
+            --soft-pink: #ffc2d1;
+            --light-pink: #ffe5ec;
+            --rose-gold: #e8b4b8;
+            --deep-rose: #d67b8a;
+            --text-dark: #4a4a4a;
+            --cream: #fff9f9;
+            --white: #ffffff;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #fff9f9 0%, #ffe5ec 100%);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        
+        /* Floating Hearts Animation */
+        .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        
+        .heart {
+            position: absolute;
+            color: var(--soft-pink);
+            opacity: 0.3;
+            animation: float 15s infinite ease-in-out;
+            font-size: 20px;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 15px 20px;
+            box-shadow: 0 2px 20px rgba(255, 133, 162, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--deep-rose);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-pink);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary-pink);
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--deep-rose);
+            cursor: pointer;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 100px 20px 50px;
+            position: relative;
+            background: radial-gradient(circle at center, rgba(255, 194, 209, 0.3) 0%, transparent 70%);
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            z-index: 1;
+            animation: fadeInUp 1s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-pink), var(--deep-rose));
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(255, 133, 162, 0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            color: var(--deep-rose);
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+        
+        .hero-description {
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            color: #666;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            max-width: 500px;
+            margin: 0 auto 40px;
+        }
+        
+        .feature-item {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(255, 133, 162, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 133, 162, 0.2);
+        }
+        
+        .feature-icon {
+            font-size: 1.5rem;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-pink), var(--deep-rose));
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            box-shadow: 0 5px 20px rgba(255, 133, 162, 0.4);
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 133, 162, 0.5);
+        }
+        
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            color: var(--primary-pink);
+            font-size: 1.5rem;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+        
+        /* Section Styles */
+        section {
+            padding: 80px 20px;
+            position: relative;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .section-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .section-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            color: var(--deep-rose);
+            margin-bottom: 10px;
+        }
+        
+        .section-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        /* About Section */
+        .about {
+            background: white;
+        }
+        
+        .about-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .about-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 30px;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, var(--light-pink), white);
+            border-left: 4px solid var(--primary-pink);
+            padding: 25px;
+            border-radius: 0 15px 15px 0;
+            margin: 30px 0;
+            text-align: left;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        
+        /* Services Section */
+        .services {
+            background: linear-gradient(to bottom, white, var(--cream));
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .service-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(255, 133, 162, 0.1);
+            transition: all 0.4s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-pink), var(--deep-rose));
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+        
+        .service-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .service-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--soft-pink);
+            box-shadow: 0 15px 40px rgba(255, 133, 162, 0.2);
+        }
+        
+        .service-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .service-card h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--deep-rose);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .service-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+        
+        .service-list li {
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--soft-pink);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .service-list li:last-child {
+            border-bottom: none;
+        }
+        
+        /* Custom Orders */
+        .custom-orders {
+            background: var(--deep-rose);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .custom-orders::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+        }
+        
+        .custom-orders .section-header h2,
+        .custom-orders .section-header p {
+            color: white;
+        }
+        
+        .steps-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .step:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: white;
+            color: var(--deep-rose);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        .step-content h4 {
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        
+        .step-content p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+        
+        /* Add-ons */
+        .addons {
+            background: white;
+        }
+        
+        .addons-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .addon-item {
+            background: linear-gradient(135deg, var(--light-pink), white);
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid var(--soft-pink);
+        }
+        
+        .addon-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 133, 162, 0.2);
+        }
+        
+        .addon-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .addon-item h4 {
+            color: var(--deep-rose);
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        
+        /* Classes Section */
+        .classes {
+            background: linear-gradient(135deg, var(--cream), white);
+        }
+        
+        .classes-content {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 25px;
+            box-shadow: 0 20px 60px rgba(255, 133, 162, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .classes-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-pink), var(--deep-rose), var(--primary-pink));
+        }
+        
+        .benefits-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: var(--light-pink);
+            border-radius: 12px;
+            font-size: 0.95rem;
+        }
+        
+        .benefit-icon {
+            font-size: 1.5rem;
+        }
+        
+        /* Reviews */
+        .reviews {
+            background: white;
+            padding-bottom: 60px;
+        }
+        
+        .reviews-carousel {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            padding: 20px;
+            max-width: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .reviews-carousel::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .review-card {
+            flex: 0 0 300px;
+            background: linear-gradient(135deg, var(--light-pink), white);
+            padding: 30px;
+            border-radius: 20px;
+            scroll-snap-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            border: 2px solid var(--soft-pink);
+        }
+        
+        .review-stars {
+            color: #ffd700;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        
+        .review-text {
+            font-style: italic;
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+        .reviewer-name {
+            font-weight: 600;
+            color: var(--deep-rose);
+        }
+        
+        /* Contact */
+        .contact {
+            background: linear-gradient(135deg, var(--deep-rose), var(--primary-pink));
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .contact::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+        
+        .contact-content {
+            position: relative;
+            z-index: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .contact h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+        }
+        
+        .contact-tagline {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+        
+        .contact-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .contact-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: white;
+            color: var(--deep-rose);
+            padding: 18px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        
+        .contact-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+        
+        .contact-info {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .contact-info p {
+            margin: 10px 0;
+            opacity: 0.9;
+        }
+        
+        .women-only-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 50px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--text-dark);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .footer-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--soft-pink);
+        }
+        
+        .footer-tagline {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .footer-heart {
+            display: inline-block;
+            animation: heartbeat 1.5s infinite;
+        }
+        
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .copyright {
+            font-size: 0.9rem;
+            opacity: 0.6;
+            margin-top: 20px;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 60px;
+                left: 0;
+                width: 100%;
+                background: white;
+                flex-direction: column;
+                padding: 20px;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+                gap: 15px;
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-header h2 {
+                font-size: 1.8rem;
+            }
+            
+            .addons-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .benefits-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .review-card {
+                flex: 0 0 280px;
+            }
+        }
+        
+        /* Intersection Observer Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Decorative Elements */
+        .sewing-needle {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.1;
+            animation: sew 3s infinite ease-in-out;
+        }
+        
+        @keyframes sew {
+            0%, 100% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
+        }
+    </style>
 </head>
-
 <body>
-
-<div class="cursor"></div>
-<div class="noise"></div>
-
-<div class="hero">
-  <h1>WELCOME TO CHAOS ⚡</h1>
-  <p>Too many animations? Yes. On purpose 😎</p>
-  <button class="btn">Hover me 👀</button>
-</div>
-
-<div class="section">Scroll = Motion 🌀</div>
-<div class="section">More Vibes 🔥</div>
-<div class="section">Still Scrolling? 😏</div>
-
-<script>
-/* CURSOR FOLLOW */
-const cursor = document.querySelector('.cursor');
-document.addEventListener('mousemove', e => {
-  cursor.style.left = e.clientX + 'px';
-  cursor.style.top = e.clientY + 'px';
-});
-
-/* PARTICLES */
-for (let i = 0; i < 80; i++) {
-  const p = document.createElement('div');
-  p.className = 'particle';
-  p.style.left = Math.random() * 100 + 'vw';
-  p.style.animationDuration = (5 + Math.random() * 10) + 's';
-  document.body.appendChild(p);
-}
-
-/* SCROLL INTERACTION */
-window.addEventListener('scroll', () => {
-  document.querySelectorAll('.section').forEach(sec => {
-    const speed = window.scrollY * 0.05;
-    sec.style.transform = `translateX(${speed}px) rotate(${speed / 5}deg)`;
-  });
-});
-
-/* MAGNETIC BUTTON */
-const btn = document.querySelector('.btn');
-btn.addEventListener('mousemove', e => {
-  const rect = btn.getBoundingClientRect();
-  const x = e.clientX - rect.left - rect.width / 2;
-  const y = e.clientY - rect.top - rect.height / 2;
-  btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
-});
-btn.addEventListener('mouseleave', () => {
-  btn.style.transform = '';
-});
-</script>
-
+    <!-- Floating Hearts Background -->
+    <div class="hearts-container" id="heartsContainer"></div>
+    
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <span>🧵</span>
+                <span>Seema Boutique</span>
+            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#classes">Classes</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <span class="hero-badge">✨ Women-Only Fashion Space</span>
+            <h1>Where style is stitched with love 💖🧵</h1>
+            <p class="hero-subtitle">Welcome to Seema Boutique</p>
+            <p class="hero-description">
+                A women-only fashion space where every outfit tells a story ✨<br>
+                From perfectly tailored daily wear to elegant festive outfits, we design clothes that fit your body, your comfort, and your vibe 💃🌸
+            </p>
+            
+            <div class="features-grid">
+                <div class="feature-item">
+                    <span class="feature-icon">✨</span>
+                    <span>Custom stitching</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">💫</span>
+                    <span>Trend-led designs</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">💎</span>
+                    <span>Premium finishing</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">💕</span>
+                    <span>Personal attention</span>
+                </div>
+            </div>
+            
+            <a href="#contact" class="cta-button">Let's Create Something Beautiful 💫</a>
+        </div>
+        <div class="scroll-indicator">⌄</div>
+    </section>
+    
+    <!-- About Section -->
+    <section class="about" id="about">
+        <div class="section-header fade-in">
+            <span class="section-icon">👗</span>
+            <h2>About Us</h2>
+            <p>At Seema Boutique, fashion is personal 💕</p>
+        </div>
+        
+        <div class="about-content fade-in">
+            <p class="about-text">
+                We believe every woman deserves clothes that feel confident, comfortable, and truly her.
+                Our boutique is built for women who love elegance but want ease, tradition with a modern touch, 
+                and designs that feel special without being overdone ✨
+            </p>
+            
+            <div class="highlight-box">
+                <p>Each outfit is stitched with attention to detail, proper fitting, and premium quality finishing 🧵💎</p>
+                <p style="margin-top: 10px; font-weight: 600; color: var(--deep-rose);">
+                    No rush. No mass production.<br>
+                    Just thoughtful fashion, made for you 💖
+                </p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Services Section -->
+    <section class="services" id="services">
+        <div class="section-header fade-in">
+            <span class="section-icon">✂️</span>
+            <h2>Tailoring & Stitching Services</h2>
+            <p>Perfect fit. Zero compromise.</p>
+        </div>
+        
+        <div class="services-grid">
+            <div class="service-card fade-in">
+                <div class="service-icon">👚</div>
+                <h3>Blouse Stitching</h3>
+                <p>Perfectly fitted blouses for every occasion</p>
+                <ul class="service-list">
+                    <li><span>✓</span> Custom measurements</li>
+                    <li><span>✓</span> Various neck designs</li>
+                    <li><span>✓</span> Sleeve options</li>
+                </ul>
+            </div>
+            
+            <div class="service-card fade-in">
+                <div class="service-icon">👗</div>
+                <h3>Kurtis & Dresses</h3>
+                <p>Comfortable yet stylish daily wear</p>
+                <ul class="service-list">
+                    <li><span>✓</span> Casual & office wear</li>
+                    <li><span>✓</span> Party dresses</li>
+                    <li><span>✓</span> Custom lengths</li>
+                </ul>
+            </div>
+            
+            <div class="service-card fade-in">
+                <div class="service-icon">🧣</div>
+                <h3>Salwar Suits</h3>
+                <p>Traditional elegance redefined</p>
+                <ul class="service-list">
+                    <li><span>✓</span> Anarkali suits</li>
+                    <li><span>✓</span> Palazzo sets</li>
+                    <li><span>✓</span> Pant style suits</li>
+                </ul>
+            </div>
+            
+            <div class="service-card fade-in">
+                <div class="service-icon">💃</div>
+                <h3>Lehengas & Festive Wear</h3>
+                <p>Make every celebration special</p>
+                <ul class="service-list">
+                    <li><span>✓</span> Bridal lehengas</li>
+                    <li><span>✓</span> Festival outfits</li>
+                    <li><span>✓</span> Heavy embroidery</li>
+                </ul>
+            </div>
+            
+            <div class="service-card fade-in">
+                <div class="service-icon">✨</div>
+                <h3>Alterations & Refitting</h3>
+                <p>Breathe new life into old favorites</p>
+                <ul class="service-list">
+                    <li><span>✓</span> Size adjustments</li>
+                    <li><span>✓</span> Style updates</li>
+                    <li><span>✓</span> Repair work</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px; font-style: italic; color: var(--deep-rose); font-size: 1.1rem;" class="fade-in">
+            Your outfit should move with you, not against you 💃💫
+        </div>
+    </section>
+    
+    <!-- Custom Orders Section -->
+    <section class="custom-orders" id="custom">
+        <div class="section-header fade-in">
+            <span class="section-icon" style="color: white;">📱</span>
+            <h2>Custom Designs & Online Orders</h2>
+            <p>Have a design in mind? Or just a Pinterest screenshot? 😄</p>
+        </div>
+        
+        <div class="steps-container">
+            <div class="step fade-in">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Choose Fabric</h4>
+                    <p>Select from our premium collection or bring your own</p>
+                </div>
+            </div>
+            
+            <div class="step fade-in">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Select Design</h4>
+                    <p>Share reference images or choose from our catalog</p>
+                </div>
+            </div>
+            
+            <div class="step fade-in">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Share Measurements</h4>
+                    <p>Visit us for fitting or share measurements online</p>
+                </div>
+            </div>
+            
+            <div class="step fade-in">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>Get It Stitched</h4>
+                    <p>Receive your custom outfit with care and precision</p>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px; font-size: 1.1rem; opacity: 0.9;" class="fade-in">
+            Perfect for busy women who want boutique quality without stress 💖🪡
+        </div>
+    </section>
+    
+    <!-- Add-ons Section -->
+    <section class="addons" id="addons">
+        <div class="section-header fade-in">
+            <span class="section-icon">💎</span>
+            <h2>Add-on Services</h2>
+            <p>Because small details make a big difference</p>
+        </div>
+        
+        <div class="addons-grid">
+            <div class="addon-item fade-in">
+                <div class="addon-icon">🌸</div>
+                <h4>Hand Embroidery</h4>
+                <p>Intricate designs</p>
+            </div>
+            
+            <div class="addon-item fade-in">
+                <div class="addon-icon">🎀</div>
+                <h4>Lace & Border Work</h4>
+                <p>Elegant finishing</p>
+            </div>
+            
+            <div class="addon-item fade-in">
+                <div class="addon-icon">🌟</div>
+                <h4>Button & Neck Design</h4>
+                <p>Custom styling</p>
+            </div>
+            
+            <div class="addon-item fade-in">
+                <div class="addon-icon">✨</div>
+                <h4>Special Finishing</h4>
+                <p>Premium touches</p>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; font-style: italic; color: var(--deep-rose);" class="fade-in">
+            Your outfit, but upgraded ✨💅
+        </div>
+    </section>
+    
+    <!-- Classes Section -->
+    <section class="classes" id="classes">
+        <div class="section-header fade-in">
+            <span class="section-icon">🎓</span>
+            <h2>Stitching & Fashion Classes</h2>
+            <p>Learn a skill. Build confidence. Create your own style 💪</p>
+        </div>
+        
+        <div class="classes-content fade-in">
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 30px; color: #555;">
+                We offer stitching classes specially for women who want to:
+            </p>
+            
+            <div class="benefits-list">
+                <div class="benefit-item">
+                    <span class="benefit-icon">✨</span>
+                    <span>Learn tailoring</span>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">🏪</span>
+                    <span>Start their own boutique</span>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">💪</span>
+                    <span>Become self-reliant</span>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">💰</span>
+                    <span>Turn passion into income</span>
+                </div>
+            </div>
+            
+            <div style="background: var(--light-pink); padding: 25px; border-radius: 15px; text-align: center; margin-top: 30px;">
+                <p style="font-size: 1.1rem; color: var(--deep-rose); font-weight: 600; margin-bottom: 10px;">
+                    Beginner-friendly, supportive, and practical 💕
+                </p>
+                <p style="color: #666;">
+                    Because empowering women is always in fashion 🌸
+                </p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Reviews Section -->
+    <section class="reviews" id="reviews">
+        <div class="section-header fade-in">
+            <span class="section-icon">⭐</span>
+            <h2>Reviews & Client Love</h2>
+            <p>Our biggest flex? Happy customers 😄💖</p>
+        </div>
+        
+        <div class="reviews-carousel">
+            <div class="review-card">
+                <div class="review-stars">⭐⭐⭐⭐⭐</div>
+                <p class="review-text">"Perfect fitting! The blouse was exactly what I wanted. Seema really understands what women need."</p>
+                <p class="reviewer-name">— Priya S.</p>
+            </div>
+            
+            <div class="review-card">
+                <div class="review-stars">⭐⭐⭐⭐⭐</div>
+                <p class="review-text">"Loved the finishing. The attention to detail is amazing. My go-to boutique for all occasions!"</p>
+                <p class="reviewer-name">— Anjali M.</p>
+            </div>
+            
+            <div class="review-card">
+                <div class="review-stars">⭐⭐⭐⭐⭐</div>
+                <p class="review-text">"Exactly what I wanted! I showed a Pinterest design and they recreated it perfectly."</p>
+                <p class="reviewer-name">— Kavita R.</p>
+            </div>
+            
+            <div class="review-card">
+                <div class="review-stars">⭐⭐⭐⭐⭐</div>
+                <p class="review-text">"The stitching classes changed my life. Now I have my own small business. Thank you Seema!"</p>
+                <p class="reviewer-name">— Deepa K.</p>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; color: var(--deep-rose); font-weight: 600;" class="fade-in">
+            That's the Seema Boutique promise 🌸
+        </div>
+    </section>
+    
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <div class="contact-content">
+            <h2>Contact Us</h2>
+            <p class="contact-tagline">Let's stitch something beautiful together 💬🧵</p>
+            
+            <div class="contact-buttons">
+                <a href="tel:8629021516" class="contact-btn">
+                    <span>📞</span>
+                    <span>Call Now: 8629021516</span>
+                </a>
+                <a href="https://wa.me/918629021516" class="contact-btn">
+                    <span>💬</span>
+                    <span>WhatsApp Us</span>
+                </a>
+            </div>
+            
+            <div class="contact-info">
+                <p>📍 Walk-ins welcome</p>
+                <p>📅 Appointments available</p>
+                <div class="women-only-badge">👭 Women Only 💖</div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-logo">Seema Boutique</div>
+        <p class="footer-tagline">
+            Made for women.<br>
+            Styled with care.<br>
+            Stitched with love <span class="footer-heart">💕🪡</span>
+        </p>
+        <p class="copyright">© 2026 Seema Boutique. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        // Generate floating hearts
+        function createHearts() {
+            const container = document.getElementById('heartsContainer');
+            const hearts = ['💖', '🧵', '✨', '🌸', '💕', '💎', '💃'];
+            
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                container.appendChild(heart);
+                
+                setTimeout(() => {
+                    heart.remove();
+                }, 20000);
+            }, 2000);
+        }
+        
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navLinks = document.getElementById('navLinks');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            mobileMenuBtn.textContent = navLinks.classList.contains('active') ? '✕' : '☰';
+        });
+        
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                mobileMenuBtn.textContent = '☰';
+            });
+        });
+        
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+        
+        // Navbar background on scroll
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.style.boxShadow = '0 2px 20px rgba(255, 133, 162, 0.2)';
+            } else {
+                navbar.style.boxShadow = '0 2px 20px rgba(255, 133, 162, 0.1)';
+            }
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // Initialize hearts
+        createHearts();
+    </script>
 </body>
-</html>
+</html>'''
