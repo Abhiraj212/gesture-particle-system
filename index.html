@@ -1,1254 +1,2049 @@
-
-html_code = '''<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seema Boutique | Stitched with Love</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0066FF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Click One Solution</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Marker Cluster -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { overscroll-behavior-y: none; background: #0a0a0a; }
+        .app-container { max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative; background: #0a0a0a; }
+        ::-webkit-scrollbar { display: none; }
         
-        :root {
-            --primary-pink: #ff85a2;
-            --soft-pink: #ffc2d1;
-            --light-pink: #ffe5ec;
-            --rose-gold: #e8b4b8;
-            --deep-rose: #d67b8a;
-            --text-dark: #4a4a4a;
-            --cream: #fff9f9;
-            --white: #ffffff;
-        }
+        .screen { display: none; min-height: 100vh; padding-bottom: 80px; animation: fadeIn 0.3s; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #fff9f9 0%, #ffe5ec 100%);
-            color: var(--text-dark);
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
+        .gold-gradient { background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF6B00 100%); }
+        .blue-gradient { background: linear-gradient(135deg, #0066FF 0%, #0052cc 100%); }
+        .dark-gradient { background: linear-gradient(180deg, #1a1a2e 0%, #0a0a0a 100%); }
         
-        /* Floating Hearts Animation */
-        .hearts-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-        
-        .heart {
-            position: absolute;
-            color: var(--soft-pink);
-            opacity: 0.3;
-            animation: float 15s infinite ease-in-out;
-            font-size: 20px;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 0.3; }
-            90% { opacity: 0.3; }
-            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
-        }
-        
-        /* Navigation */
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.95);
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 430px; background: rgba(26,26,46,0.95);
             backdrop-filter: blur(10px);
-            z-index: 1000;
-            padding: 15px 20px;
-            box-shadow: 0 2px 20px rgba(255, 133, 162, 0.1);
-            transition: all 0.3s ease;
+            border-top: 1px solid rgba(255,215,0,0.2);
+            display: flex; justify-content: space-around; padding: 8px 0; z-index: 1000;
         }
+        .nav-item { display: flex; flex-direction: column; align-items: center; padding: 6px 16px; color: #666; cursor: pointer; transition: all 0.3s; }
+        .nav-item.active { color: #FFD700; transform: scale(1.1); }
+        .nav-item i { font-size: 22px; margin-bottom: 2px; }
+        .nav-item span { font-size: 11px; font-weight: 500; }
         
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .input-field { 
+            width: 100%; padding: 16px 20px; 
+            background: rgba(255,255,255,0.1); 
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 16px; 
+            font-size: 16px; color: white;
+            transition: all 0.3s;
         }
+        .input-field:focus { outline: none; border-color: #FFD700; box-shadow: 0 0 20px rgba(255,215,0,0.3); }
+        .input-field::placeholder { color: rgba(255,255,255,0.5); }
         
-        .logo {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--deep-rose);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .btn-primary { 
+            width: 100%; padding: 18px; 
+            background: linear-gradient(135deg, #0066FF, #0052cc);
+            color: white; border: none; border-radius: 16px; 
+            font-size: 18px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s;
+            box-shadow: 0 8px 32px rgba(0,102,255,0.4);
+            text-transform: uppercase; letter-spacing: 1px;
         }
+        .btn-primary:active { transform: scale(0.98); box-shadow: 0 4px 16px rgba(0,102,255,0.3); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .nav-links {
-            display: flex;
-            gap: 25px;
-            list-style: none;
+        .btn-gold { 
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #0a0a0a; box-shadow: 0 8px 32px rgba(255,215,0,0.4);
         }
+        .btn-gold:active { box-shadow: 0 4px 16px rgba(255,215,0,0.3); }
         
-        .nav-links a {
-            text-decoration: none;
-            color: var(--text-dark);
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: color 0.3s ease;
-            position: relative;
-        }
-        
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--primary-pink);
-            transition: width 0.3s ease;
-        }
-        
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-        
-        .nav-links a:hover {
-            color: var(--primary-pink);
-        }
-        
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--deep-rose);
-            cursor: pointer;
-        }
-        
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 100px 20px 50px;
-            position: relative;
-            background: radial-gradient(circle at center, rgba(255, 194, 209, 0.3) 0%, transparent 70%);
-        }
-        
-        .hero-content {
-            max-width: 800px;
-            z-index: 1;
-            animation: fadeInUp 1s ease-out;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .hero-badge {
-            display: inline-block;
-            background: linear-gradient(135deg, var(--primary-pink), var(--deep-rose));
-            color: white;
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(255, 133, 162, 0.3);
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        .hero h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.8rem;
-            color: var(--deep-rose);
-            margin-bottom: 15px;
-            line-height: 1.2;
-        }
-        
-        .hero-subtitle {
-            font-size: 1.2rem;
-            color: var(--text-dark);
-            margin-bottom: 30px;
-            font-weight: 300;
-        }
-        
-        .hero-description {
-            font-size: 1.1rem;
-            margin-bottom: 40px;
-            color: #666;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            max-width: 500px;
-            margin: 0 auto 40px;
-        }
-        
-        .feature-item {
-            background: white;
-            padding: 15px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(255, 133, 162, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .feature-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(255, 133, 162, 0.2);
-        }
-        
-        .feature-icon {
-            font-size: 1.5rem;
-        }
-        
-        .cta-button {
-            display: inline-block;
-            background: linear-gradient(135deg, var(--primary-pink), var(--deep-rose));
-            color: white;
-            padding: 15px 40px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            box-shadow: 0 5px 20px rgba(255, 133, 162, 0.4);
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-        
-        .cta-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(255, 133, 162, 0.5);
-        }
-        
-        .scroll-indicator {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            animation: bounce 2s infinite;
-            color: var(--primary-pink);
-            font-size: 1.5rem;
-        }
-        
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
-            40% { transform: translateX(-50%) translateY(-10px); }
-            60% { transform: translateX(-50%) translateY(-5px); }
-        }
-        
-        /* Section Styles */
-        section {
-            padding: 80px 20px;
-            position: relative;
-        }
-        
-        .section-header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-        
-        .section-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            display: inline-block;
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        .section-header h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.2rem;
-            color: var(--deep-rose);
-            margin-bottom: 10px;
-        }
-        
-        .section-header p {
-            color: #666;
-            font-size: 1.1rem;
-        }
-        
-        /* About Section */
-        .about {
-            background: white;
-        }
-        
-        .about-content {
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        
-        .about-text {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: #555;
-            margin-bottom: 30px;
-        }
-        
-        .highlight-box {
-            background: linear-gradient(135deg, var(--light-pink), white);
-            border-left: 4px solid var(--primary-pink);
-            padding: 25px;
-            border-radius: 0 15px 15px 0;
-            margin: 30px 0;
-            text-align: left;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-        }
-        
-        /* Services Section */
-        .services {
-            background: linear-gradient(to bottom, white, var(--cream));
-        }
-        
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            max-width: 1000px;
-            margin: 0 auto;
+        .card { 
+            background: rgba(255,255,255,0.05); 
+            border: 1px solid rgba(255,215,0,0.1);
+            border-radius: 24px; 
+            padding: 24px; margin-bottom: 16px;
+            backdrop-filter: blur(10px);
         }
         
         .service-card {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(255, 133, 162, 0.1);
-            transition: all 0.4s ease;
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
+            background: rgba(255,255,255,0.08);
+            border-radius: 20px; padding: 20px;
+            border: 1px solid rgba(255,215,0,0.15);
+            transition: all 0.3s; cursor: pointer;
         }
+        .service-card:hover { transform: translateY(-5px); border-color: #FFD700; }
+        .service-card:active { transform: scale(0.98); }
         
-        .service-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(90deg, var(--primary-pink), var(--deep-rose));
-            transform: scaleX(0);
-            transition: transform 0.4s ease;
+        .gold-text { color: #FFD700; }
+        .orange-text { color: #FF6B00; }
+        
+        .otp-input { 
+            width: 50px; height: 60px; 
+            text-align: center; font-size: 28px; font-weight: bold;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,215,0,0.3);
+            border-radius: 16px; color: white;
+            margin: 0 5px;
         }
+        .otp-input:focus { border-color: #FFD700; outline: none; }
         
-        .service-card:hover::before {
-            transform: scaleX(1);
+        .toast { 
+            position: fixed; bottom: 100px; left: 50%; 
+            transform: translateX(-50%) translateY(100px); 
+            background: linear-gradient(135deg, #1a1a2e, #0a0a0a);
+            color: #FFD700; padding: 16px 32px;
+            border-radius: 50px; font-size: 14px; font-weight: 600;
+            border: 1px solid rgba(255,215,0,0.3);
+            z-index: 3000; opacity: 0;
+            transition: all 0.3s; backdrop-filter: blur(10px);
         }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         
-        .service-card:hover {
-            transform: translateY(-10px);
-            border-color: var(--soft-pink);
-            box-shadow: 0 15px 40px rgba(255, 133, 162, 0.2);
+        .badge {
+            display: inline-block; padding: 6px 16px;
+            border-radius: 50px; font-size: 12px; font-weight: 700;
         }
+        .badge-pending { background: rgba(255,193,7,0.2); color: #FFC107; border: 1px solid rgba(255,193,7,0.3); }
+        .badge-accepted { background: rgba(33,150,243,0.2); color: #2196F3; border: 1px solid rgba(33,150,243,0.3); }
+        .badge-ongoing { background: rgba(76,175,80,0.2); color: #4CAF50; border: 1px solid rgba(76,175,80,0.3); }
+        .badge-completed { background: rgba(156,39,176,0.2); color: #9C27B0; border: 1px solid rgba(156,39,176,0.3); }
+        .badge-cancelled { background: rgba(244,67,54,0.2); color: #F44336; border: 1px solid rgba(244,67,54,0.3); }
         
-        .service-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
-        
-        .service-card h3 {
-            font-family: 'Playfair Display', serif;
-            color: var(--deep-rose);
-            margin-bottom: 10px;
-            font-size: 1.3rem;
-        }
-        
-        .service-list {
-            list-style: none;
-            margin-top: 15px;
-        }
-        
-        .service-list li {
-            padding: 8px 0;
-            border-bottom: 1px dashed var(--soft-pink);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .service-list li:last-child {
-            border-bottom: none;
-        }
-        
-        /* Custom Orders */
-        .custom-orders {
-            background: var(--deep-rose);
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .custom-orders::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 600px;
-            height: 600px;
-            background: rgba(255, 255, 255, 0.05);
+        .emergency-btn {
+            position: fixed; bottom: 100px; right: 20px;
+            width: 64px; height: 64px;
             border-radius: 50%;
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            color: white; border: none; font-size: 28px;
+            box-shadow: 0 8px 32px rgba(255,68,68,0.5);
+            z-index: 999; animation: pulse 2s infinite;
+            cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255,68,68,0.6); transform: scale(1); }
+            50% { box-shadow: 0 0 0 20px rgba(255,68,68,0); transform: scale(1.05); }
         }
         
-        .custom-orders .section-header h2,
-        .custom-orders .section-header p {
-            color: white;
+        .modal {
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000; justify-content: center; align-items: flex-end;
+            backdrop-filter: blur(5px);
         }
-        
-        .steps-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            max-width: 600px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
+        .modal.active { display: flex; }
+        .modal-content {
+            background: linear-gradient(180deg, #1a1a2e 0%, #0a0a0a 100%);
+            width: 100%; max-width: 430px;
+            border-radius: 40px 40px 0 0;
+            padding: 32px 24px;
+            border-top: 2px solid rgba(255,215,0,0.3);
+            animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         
-        .step {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.3s ease;
+        .admin-panel { background: linear-gradient(180deg, #0d1b2a 0%, #1b263b 100%); }
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px; padding: 20px;
+            border: 1px solid rgba(255,215,0,0.1);
+            text-align: center;
         }
+        .stat-number { font-size: 36px; font-weight: 800; color: #FFD700; }
         
-        .step:hover {
-            transform: translateX(10px);
-            background: rgba(255, 255, 255, 0.15);
+        .loading-screen {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #0a0a0a;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 5000;
         }
-        
-        .step-number {
-            width: 50px;
-            height: 50px;
-            background: white;
-            color: var(--deep-rose);
+        .spinner {
+            width: 60px; height: 60px;
+            border: 4px solid rgba(255,215,0,0.2);
+            border-top-color: #FFD700;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.2rem;
-            flex-shrink: 0;
+            animation: spin 1s linear infinite;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
         
-        .step-content h4 {
-            margin-bottom: 5px;
-            font-size: 1.1rem;
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,215,0,0.1), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
         }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         
-        .step-content p {
-            opacity: 0.9;
-            font-size: 0.9rem;
-        }
-        
-        /* Add-ons */
-        .addons {
-            background: white;
-        }
-        
-        .addons-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .addon-item {
-            background: linear-gradient(135deg, var(--light-pink), white);
-            padding: 25px;
-            border-radius: 20px;
+        .offline-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ff4444;
+            color: white;
             text-align: center;
-            transition: all 0.3s ease;
-            border: 2px solid var(--soft-pink);
+            padding: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 9999;
+            transform: translateY(-100%);
+            transition: transform 0.3s;
         }
+        .offline-indicator.show { transform: translateY(0); }
         
-        .addon-item:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 30px rgba(255, 133, 162, 0.2);
-        }
+        .marker-cluster-small { background-color: rgba(255, 215, 0, 0.6); }
+        .marker-cluster-medium { background-color: rgba(255, 165, 0, 0.6); }
+        .marker-cluster-large { background-color: rgba(255, 107, 0, 0.6); }
+        .marker-cluster div { background-color: rgba(0,0,0,0.8); color: #FFD700; border-radius: 50%; }
         
-        .addon-icon {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-        
-        .addon-item h4 {
-            color: var(--deep-rose);
-            font-size: 1rem;
-            margin-bottom: 5px;
-        }
-        
-        /* Classes Section */
-        .classes {
-            background: linear-gradient(135deg, var(--cream), white);
-        }
-        
-        .classes-content {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 40px;
-            border-radius: 25px;
-            box-shadow: 0 20px 60px rgba(255, 133, 162, 0.15);
+        .ripple {
             position: relative;
             overflow: hidden;
         }
-        
-        .classes-content::before {
+        .ripple::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(90deg, var(--primary-pink), var(--deep-rose), var(--primary-pink));
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
         }
-        
-        .benefits-list {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin: 30px 0;
-        }
-        
-        .benefit-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 15px;
-            background: var(--light-pink);
-            border-radius: 12px;
-            font-size: 0.95rem;
-        }
-        
-        .benefit-icon {
-            font-size: 1.5rem;
-        }
-        
-        /* Reviews */
-        .reviews {
-            background: white;
-            padding-bottom: 60px;
-        }
-        
-        .reviews-carousel {
-            display: flex;
-            gap: 20px;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            padding: 20px;
-            max-width: 100%;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        .reviews-carousel::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .review-card {
-            flex: 0 0 300px;
-            background: linear-gradient(135deg, var(--light-pink), white);
-            padding: 30px;
-            border-radius: 20px;
-            scroll-snap-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            border: 2px solid var(--soft-pink);
-        }
-        
-        .review-stars {
-            color: #ffd700;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-        }
-        
-        .review-text {
-            font-style: italic;
-            color: #555;
-            margin-bottom: 15px;
-            font-size: 1rem;
-            line-height: 1.6;
-        }
-        
-        .reviewer-name {
-            font-weight: 600;
-            color: var(--deep-rose);
-        }
-        
-        /* Contact */
-        .contact {
-            background: linear-gradient(135deg, var(--deep-rose), var(--primary-pink));
-            color: white;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .contact::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            opacity: 0.3;
-        }
-        
-        .contact-content {
-            position: relative;
-            z-index: 1;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .contact h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.2rem;
-            margin-bottom: 20px;
-        }
-        
-        .contact-tagline {
-            font-size: 1.2rem;
-            margin-bottom: 40px;
-            opacity: 0.95;
-        }
-        
-        .contact-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        
-        .contact-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            background: white;
-            color: var(--deep-rose);
-            padding: 18px 30px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-        }
-        
-        .contact-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
-        }
-        
-        .contact-info {
-            margin-top: 30px;
-            padding-top: 30px;
-            border-top: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .contact-info p {
-            margin: 10px 0;
-            opacity: 0.9;
-        }
-        
-        .women-only-badge {
-            display: inline-block;
-            background: rgba(255,255,255,0.2);
-            padding: 8px 20px;
-            border-radius: 50px;
-            margin-top: 20px;
-            font-size: 0.9rem;
-            border: 2px solid rgba(255,255,255,0.3);
-        }
-        
-        /* Footer */
-        footer {
-            background: var(--text-dark);
-            color: white;
-            text-align: center;
-            padding: 40px 20px;
-        }
-        
-        .footer-logo {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-            color: var(--soft-pink);
-        }
-        
-        .footer-tagline {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin-bottom: 20px;
-        }
-        
-        .footer-heart {
-            display: inline-block;
-            animation: heartbeat 1.5s infinite;
-        }
-        
-        @keyframes heartbeat {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-        
-        .copyright {
-            font-size: 0.9rem;
-            opacity: 0.6;
-            margin-top: 20px;
-        }
-        
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-                position: absolute;
-                top: 60px;
-                left: 0;
-                width: 100%;
-                background: white;
-                flex-direction: column;
-                padding: 20px;
-                box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-                gap: 15px;
-            }
-            
-            .nav-links.active {
-                display: flex;
-            }
-            
-            .mobile-menu-btn {
-                display: block;
-            }
-            
-            .hero h1 {
-                font-size: 2rem;
-            }
-            
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .section-header h2 {
-                font-size: 1.8rem;
-            }
-            
-            .addons-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .benefits-list {
-                grid-template-columns: 1fr;
-            }
-            
-            .review-card {
-                flex: 0 0 280px;
-            }
-        }
-        
-        /* Intersection Observer Animations */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-        
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        /* Decorative Elements */
-        .sewing-needle {
-            position: absolute;
-            font-size: 2rem;
-            opacity: 0.1;
-            animation: sew 3s infinite ease-in-out;
-        }
-        
-        @keyframes sew {
-            0%, 100% { transform: rotate(-10deg); }
-            50% { transform: rotate(10deg); }
+        .ripple:active::after {
+            width: 300px;
+            height: 300px;
         }
     </style>
 </head>
 <body>
-    <!-- Floating Hearts Background -->
-    <div class="hearts-container" id="heartsContainer"></div>
-    
-    <!-- Navigation -->
-    <nav id="navbar">
-        <div class="nav-container">
-            <a href="#" class="logo">
-                <span>🧵</span>
-                <span>Seema Boutique</span>
-            </a>
-            <ul class="nav-links" id="navLinks">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#services">Services</a></li>
-                <li><a href="#classes">Classes</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-            <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+    <div class="app-container">
+        <!-- Offline Indicator -->
+        <div class="offline-indicator" id="offlineIndicator">
+            <i class="fas fa-wifi-slash mr-2"></i>You are offline
         </div>
-    </nav>
-    
-    <!-- Hero Section -->
-    <section class="hero" id="home">
-        <div class="hero-content">
-            <span class="hero-badge">✨ Women-Only Fashion Space</span>
-            <h1>Where style is stitched with love 💖🧵</h1>
-            <p class="hero-subtitle">Welcome to Seema Boutique</p>
-            <p class="hero-description">
-                A women-only fashion space where every outfit tells a story ✨<br>
-                From perfectly tailored daily wear to elegant festive outfits, we design clothes that fit your body, your comfort, and your vibe 💃🌸
-            </p>
-            
-            <div class="features-grid">
-                <div class="feature-item">
-                    <span class="feature-icon">✨</span>
-                    <span>Custom stitching</span>
+
+        <!-- Loading Screen -->
+        <div class="loading-screen" id="loadingScreen">
+            <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center mb-6 shadow-2xl">
+                <i class="fas fa-hand-pointer text-white text-4xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-white mb-2">Click One Solution</h1>
+            <p class="text-gray-400" id="loadingText">Initializing...</p>
+            <div class="spinner mt-6"></div>
+        </div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast"></div>
+
+        <!-- Auth Screen -->
+        <div class="screen active" id="authScreen">
+            <div class="min-h-screen flex flex-col justify-center px-6 py-12 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                    <div class="absolute top-10 left-10 w-32 h-32 bg-yellow-500 rounded-full opacity-10 blur-3xl"></div>
+                    <div class="absolute bottom-20 right-10 w-48 h-48 bg-blue-500 rounded-full opacity-10 blur-3xl"></div>
                 </div>
-                <div class="feature-item">
-                    <span class="feature-icon">💫</span>
-                    <span>Trend-led designs</span>
-                </div>
-                <div class="feature-item">
-                    <span class="feature-icon">💎</span>
-                    <span>Premium finishing</span>
-                </div>
-                <div class="feature-item">
-                    <span class="feature-icon">💕</span>
-                    <span>Personal attention</span>
-                </div>
-            </div>
-            
-            <a href="#contact" class="cta-button">Let's Create Something Beautiful 💫</a>
-        </div>
-        <div class="scroll-indicator">⌄</div>
-    </section>
-    
-    <!-- About Section -->
-    <section class="about" id="about">
-        <div class="section-header fade-in">
-            <span class="section-icon">👗</span>
-            <h2>About Us</h2>
-            <p>At Seema Boutique, fashion is personal 💕</p>
-        </div>
-        
-        <div class="about-content fade-in">
-            <p class="about-text">
-                We believe every woman deserves clothes that feel confident, comfortable, and truly her.
-                Our boutique is built for women who love elegance but want ease, tradition with a modern touch, 
-                and designs that feel special without being overdone ✨
-            </p>
-            
-            <div class="highlight-box">
-                <p>Each outfit is stitched with attention to detail, proper fitting, and premium quality finishing 🧵💎</p>
-                <p style="margin-top: 10px; font-weight: 600; color: var(--deep-rose);">
-                    No rush. No mass production.<br>
-                    Just thoughtful fashion, made for you 💖
-                </p>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Services Section -->
-    <section class="services" id="services">
-        <div class="section-header fade-in">
-            <span class="section-icon">✂️</span>
-            <h2>Tailoring & Stitching Services</h2>
-            <p>Perfect fit. Zero compromise.</p>
-        </div>
-        
-        <div class="services-grid">
-            <div class="service-card fade-in">
-                <div class="service-icon">👚</div>
-                <h3>Blouse Stitching</h3>
-                <p>Perfectly fitted blouses for every occasion</p>
-                <ul class="service-list">
-                    <li><span>✓</span> Custom measurements</li>
-                    <li><span>✓</span> Various neck designs</li>
-                    <li><span>✓</span> Sleeve options</li>
-                </ul>
-            </div>
-            
-            <div class="service-card fade-in">
-                <div class="service-icon">👗</div>
-                <h3>Kurtis & Dresses</h3>
-                <p>Comfortable yet stylish daily wear</p>
-                <ul class="service-list">
-                    <li><span>✓</span> Casual & office wear</li>
-                    <li><span>✓</span> Party dresses</li>
-                    <li><span>✓</span> Custom lengths</li>
-                </ul>
-            </div>
-            
-            <div class="service-card fade-in">
-                <div class="service-icon">🧣</div>
-                <h3>Salwar Suits</h3>
-                <p>Traditional elegance redefined</p>
-                <ul class="service-list">
-                    <li><span>✓</span> Anarkali suits</li>
-                    <li><span>✓</span> Palazzo sets</li>
-                    <li><span>✓</span> Pant style suits</li>
-                </ul>
-            </div>
-            
-            <div class="service-card fade-in">
-                <div class="service-icon">💃</div>
-                <h3>Lehengas & Festive Wear</h3>
-                <p>Make every celebration special</p>
-                <ul class="service-list">
-                    <li><span>✓</span> Bridal lehengas</li>
-                    <li><span>✓</span> Festival outfits</li>
-                    <li><span>✓</span> Heavy embroidery</li>
-                </ul>
-            </div>
-            
-            <div class="service-card fade-in">
-                <div class="service-icon">✨</div>
-                <h3>Alterations & Refitting</h3>
-                <p>Breathe new life into old favorites</p>
-                <ul class="service-list">
-                    <li><span>✓</span> Size adjustments</li>
-                    <li><span>✓</span> Style updates</li>
-                    <li><span>✓</span> Repair work</li>
-                </ul>
-            </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 40px; font-style: italic; color: var(--deep-rose); font-size: 1.1rem;" class="fade-in">
-            Your outfit should move with you, not against you 💃💫
-        </div>
-    </section>
-    
-    <!-- Custom Orders Section -->
-    <section class="custom-orders" id="custom">
-        <div class="section-header fade-in">
-            <span class="section-icon" style="color: white;">📱</span>
-            <h2>Custom Designs & Online Orders</h2>
-            <p>Have a design in mind? Or just a Pinterest screenshot? 😄</p>
-        </div>
-        
-        <div class="steps-container">
-            <div class="step fade-in">
-                <div class="step-number">1</div>
-                <div class="step-content">
-                    <h4>Choose Fabric</h4>
-                    <p>Select from our premium collection or bring your own</p>
-                </div>
-            </div>
-            
-            <div class="step fade-in">
-                <div class="step-number">2</div>
-                <div class="step-content">
-                    <h4>Select Design</h4>
-                    <p>Share reference images or choose from our catalog</p>
-                </div>
-            </div>
-            
-            <div class="step fade-in">
-                <div class="step-number">3</div>
-                <div class="step-content">
-                    <h4>Share Measurements</h4>
-                    <p>Visit us for fitting or share measurements online</p>
-                </div>
-            </div>
-            
-            <div class="step fade-in">
-                <div class="step-number">4</div>
-                <div class="step-content">
-                    <h4>Get It Stitched</h4>
-                    <p>Receive your custom outfit with care and precision</p>
-                </div>
-            </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 40px; font-size: 1.1rem; opacity: 0.9;" class="fade-in">
-            Perfect for busy women who want boutique quality without stress 💖🪡
-        </div>
-    </section>
-    
-    <!-- Add-ons Section -->
-    <section class="addons" id="addons">
-        <div class="section-header fade-in">
-            <span class="section-icon">💎</span>
-            <h2>Add-on Services</h2>
-            <p>Because small details make a big difference</p>
-        </div>
-        
-        <div class="addons-grid">
-            <div class="addon-item fade-in">
-                <div class="addon-icon">🌸</div>
-                <h4>Hand Embroidery</h4>
-                <p>Intricate designs</p>
-            </div>
-            
-            <div class="addon-item fade-in">
-                <div class="addon-icon">🎀</div>
-                <h4>Lace & Border Work</h4>
-                <p>Elegant finishing</p>
-            </div>
-            
-            <div class="addon-item fade-in">
-                <div class="addon-icon">🌟</div>
-                <h4>Button & Neck Design</h4>
-                <p>Custom styling</p>
-            </div>
-            
-            <div class="addon-item fade-in">
-                <div class="addon-icon">✨</div>
-                <h4>Special Finishing</h4>
-                <p>Premium touches</p>
-            </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 30px; font-style: italic; color: var(--deep-rose);" class="fade-in">
-            Your outfit, but upgraded ✨💅
-        </div>
-    </section>
-    
-    <!-- Classes Section -->
-    <section class="classes" id="classes">
-        <div class="section-header fade-in">
-            <span class="section-icon">🎓</span>
-            <h2>Stitching & Fashion Classes</h2>
-            <p>Learn a skill. Build confidence. Create your own style 💪</p>
-        </div>
-        
-        <div class="classes-content fade-in">
-            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 30px; color: #555;">
-                We offer stitching classes specially for women who want to:
-            </p>
-            
-            <div class="benefits-list">
-                <div class="benefit-item">
-                    <span class="benefit-icon">✨</span>
-                    <span>Learn tailoring</span>
-                </div>
-                <div class="benefit-item">
-                    <span class="benefit-icon">🏪</span>
-                    <span>Start their own boutique</span>
-                </div>
-                <div class="benefit-item">
-                    <span class="benefit-icon">💪</span>
-                    <span>Become self-reliant</span>
-                </div>
-                <div class="benefit-item">
-                    <span class="benefit-icon">💰</span>
-                    <span>Turn passion into income</span>
-                </div>
-            </div>
-            
-            <div style="background: var(--light-pink); padding: 25px; border-radius: 15px; text-align: center; margin-top: 30px;">
-                <p style="font-size: 1.1rem; color: var(--deep-rose); font-weight: 600; margin-bottom: 10px;">
-                    Beginner-friendly, supportive, and practical 💕
-                </p>
-                <p style="color: #666;">
-                    Because empowering women is always in fashion 🌸
-                </p>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Reviews Section -->
-    <section class="reviews" id="reviews">
-        <div class="section-header fade-in">
-            <span class="section-icon">⭐</span>
-            <h2>Reviews & Client Love</h2>
-            <p>Our biggest flex? Happy customers 😄💖</p>
-        </div>
-        
-        <div class="reviews-carousel">
-            <div class="review-card">
-                <div class="review-stars">⭐⭐⭐⭐⭐</div>
-                <p class="review-text">"Perfect fitting! The blouse was exactly what I wanted. Seema really understands what women need."</p>
-                <p class="reviewer-name">— Priya S.</p>
-            </div>
-            
-            <div class="review-card">
-                <div class="review-stars">⭐⭐⭐⭐⭐</div>
-                <p class="review-text">"Loved the finishing. The attention to detail is amazing. My go-to boutique for all occasions!"</p>
-                <p class="reviewer-name">— Anjali M.</p>
-            </div>
-            
-            <div class="review-card">
-                <div class="review-stars">⭐⭐⭐⭐⭐</div>
-                <p class="review-text">"Exactly what I wanted! I showed a Pinterest design and they recreated it perfectly."</p>
-                <p class="reviewer-name">— Kavita R.</p>
-            </div>
-            
-            <div class="review-card">
-                <div class="review-stars">⭐⭐⭐⭐⭐</div>
-                <p class="review-text">"The stitching classes changed my life. Now I have my own small business. Thank you Seema!"</p>
-                <p class="reviewer-name">— Deepa K.</p>
-            </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 30px; color: var(--deep-rose); font-weight: 600;" class="fade-in">
-            That's the Seema Boutique promise 🌸
-        </div>
-    </section>
-    
-    <!-- Contact Section -->
-    <section class="contact" id="contact">
-        <div class="contact-content">
-            <h2>Contact Us</h2>
-            <p class="contact-tagline">Let's stitch something beautiful together 💬🧵</p>
-            
-            <div class="contact-buttons">
-                <a href="tel:8629021516" class="contact-btn">
-                    <span>📞</span>
-                    <span>Call Now: 8629021516</span>
-                </a>
-                <a href="https://wa.me/918629021516" class="contact-btn">
-                    <span>💬</span>
-                    <span>WhatsApp Us</span>
-                </a>
-            </div>
-            
-            <div class="contact-info">
-                <p>📍 Walk-ins welcome</p>
-                <p>📅 Appointments available</p>
-                <div class="women-only-badge">👭 Women Only 💖</div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Footer -->
-    <footer>
-        <div class="footer-logo">Seema Boutique</div>
-        <p class="footer-tagline">
-            Made for women.<br>
-            Styled with care.<br>
-            Stitched with love <span class="footer-heart">💕🪡</span>
-        </p>
-        <p class="copyright">© 2026 Seema Boutique. All rights reserved.</p>
-    </footer>
-    
-    <script>
-        // Generate floating hearts
-        function createHearts() {
-            const container = document.getElementById('heartsContainer');
-            const hearts = ['💖', '🧵', '✨', '🌸', '💕', '💎', '💃'];
-            
-            setInterval(() => {
-                const heart = document.createElement('div');
-                heart.className = 'heart';
-                heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
-                heart.style.left = Math.random() * 100 + '%';
-                heart.style.animationDuration = (Math.random() * 10 + 10) + 's';
-                heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
-                container.appendChild(heart);
                 
-                setTimeout(() => {
-                    heart.remove();
-                }, 20000);
-            }, 2000);
-        }
-        
-        // Mobile menu toggle
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const navLinks = document.getElementById('navLinks');
-        
-        mobileMenuBtn.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            mobileMenuBtn.textContent = navLinks.classList.contains('active') ? '✕' : '☰';
-        });
-        
-        // Close mobile menu when clicking a link
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.classList.remove('active');
-                mobileMenuBtn.textContent = '☰';
-            });
-        });
-        
-        // Intersection Observer for fade-in animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
+                <div class="text-center mb-10 relative z-10">
+                    <div class="w-28 h-28 mx-auto mb-6 rounded-3xl gold-gradient flex items-center justify-center shadow-2xl transform hover:scale-105 transition-transform">
+                        <i class="fas fa-hand-pointer text-black text-5xl"></i>
+                    </div>
+                    <h1 class="text-4xl font-black text-white mb-2 tracking-tight">
+                        Click<span class="gold-text">One</span>
+                    </h1>
+                    <p class="text-orange-text font-bold text-lg tracking-widest uppercase">Solution</p>
+                    <p class="text-gray-400 mt-3 text-sm">Your Hyperlocal Service Marketplace</p>
+                </div>
+                
+                <div class="relative z-10 space-y-6">
+                    <!-- Role Selection -->
+                    <div class="flex bg-white/5 rounded-2xl p-1.5 border border-white/10">
+                        <button class="flex-1 py-3.5 rounded-xl text-sm font-bold transition-all bg-gradient-to-r from-yellow-400 to-orange-500 text-black shadow-lg" id="btnUser" onclick="setRole('user')">
+                            <i class="fas fa-user mr-2"></i>USER
+                        </button>
+                        <button class="flex-1 py-3.5 rounded-xl text-sm font-bold transition-all text-gray-400 hover:text-white" id="btnProvider" onclick="setRole('provider')">
+                            <i class="fas fa-briefcase mr-2"></i>PROVIDER
+                        </button>
+                        <button class="flex-1 py-3.5 rounded-xl text-sm font-bold transition-all text-gray-400 hover:text-white" id="btnAdmin" onclick="setRole('admin')">
+                            <i class="fas fa-shield-alt mr-2"></i>ADMIN
+                        </button>
+                    </div>
+                    
+                    <!-- Email/Password Auth -->
+                    <div id="authForm" class="space-y-5">
+                        <div class="relative">
+                            <i class="fas fa-envelope absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="email" id="emailInput" class="input-field pl-14" placeholder="Enter your email address" autocomplete="email">
+                        </div>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="password" id="passwordInput" class="input-field pl-14" placeholder="Enter password" autocomplete="current-password">
+                        </div>
+                        <div class="relative" id="nameField" style="display: none;">
+                            <i class="fas fa-user absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" id="nameInput" class="input-field pl-14" placeholder="Your full name" autocomplete="name">
+                        </div>
+                        
+                        <button class="btn-primary btn-gold ripple" onclick="handleAuth()" id="authBtn">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Continue
+                        </button>
+                        
+                        <div class="flex justify-between text-sm">
+                            <button onclick="toggleAuthMode()" class="text-yellow-400 hover:text-yellow-300 font-semibold" id="authToggle">
+                                Create account
+                            </button>
+                            <button onclick="showForgotPassword()" class="text-gray-400 hover:text-white">
+                                Forgot password?
+                            </button>
+                        </div>
+                        
+                        <div class="relative my-6">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-white/10"></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-2 bg-[#0a0a0a] text-gray-500">Or continue with</span>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full py-4 rounded-xl bg-white/5 border border-white/10 text-white font-semibold flex items-center justify-center gap-3 hover:bg-white/10 transition-all" onclick="signInWithGoogle()">
+                            <i class="fab fa-google text-red-400 text-xl"></i>
+                            Google
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App -->
+        <div id="mainApp" style="display: none;">
+            <!-- User Home Screen -->
+            <div class="screen active" id="homeScreen">
+                <div class="sticky top-0 z-50 bg-gradient-to-b from-[#0a0a0a] to-transparent pt-4 pb-2 px-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Welcome back</p>
+                            <h2 class="text-2xl font-bold text-white" id="userNameDisplay">User</h2>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full gold-gradient flex items-center justify-center text-black font-bold text-lg" id="userAvatar">U</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 text-sm text-gray-400 bg-white/5 rounded-full px-4 py-2 border border-white/10">
+                        <i class="fas fa-map-marker-alt gold-text"></i>
+                        <span id="locationText">Detecting location...</span>
+                    </div>
+                </div>
+                
+                <div class="px-4 pb-24">
+                    <!-- Search -->
+                    <div class="relative mb-6">
+                        <i class="fas fa-search absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" class="input-field pl-14" placeholder="Search for services..." onkeyup="searchServices(this.value)">
+                    </div>
+
+                    <!-- Home Services -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-white">Home Services</h3>
+                            <span class="text-xs gold-text">10% Commission</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-3" id="homeServices">
+                            <!-- Services populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Taxi Services -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-white">Taxi Services</h3>
+                            <span class="text-xs gold-text">10% Commission</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-3" id="taxiServices">
+                            <!-- Services populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Other Services -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-white">Other Services</h3>
+                            <span class="text-xs gold-text">16% Commission</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-3" id="otherServices">
+                            <!-- Services populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Recent Bookings -->
+                    <div class="card">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-white">My Bookings</h3>
+                            <button onclick="showScreen('bookings')" class="text-sm gold-text">View All</button>
+                        </div>
+                        <div id="recentBookings">
+                            <div class="shimmer h-20 rounded-2xl"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookings Screen -->
+            <div class="screen" id="bookingsScreen">
+                <div class="sticky top-0 z-50 bg-[#0a0a0a] pt-4 pb-2 px-4 border-b border-white/10">
+                    <div class="flex items-center gap-4">
+                        <button onclick="showScreen('home')" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h2 class="text-xl font-bold text-white">My Bookings</h2>
+                    </div>
+                </div>
+                <div class="p-4" id="allBookings">
+                    <div class="shimmer h-20 rounded-2xl mb-3"></div>
+                    <div class="shimmer h-20 rounded-2xl mb-3"></div>
+                    <div class="shimmer h-20 rounded-2xl"></div>
+                </div>
+            </div>
+
+            <!-- Wallet Screen -->
+            <div class="screen" id="walletScreen">
+                <div class="sticky top-0 z-50 bg-[#0a0a0a] pt-4 pb-2 px-4">
+                    <h2 class="text-xl font-bold text-white">My Wallet</h2>
+                </div>
+                <div class="p-4">
+                    <div class="card text-center py-8 mb-6 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-full gold-gradient opacity-10"></div>
+                        <p class="text-gray-400 mb-2 relative z-10">Available Balance</p>
+                        <h3 class="text-5xl font-black gold-text mb-4 relative z-10" id="walletBalance">₹0</h3>
+                        <div class="flex gap-3 relative z-10">
+                            <button class="flex-1 py-3 rounded-xl bg-white/10 text-white font-semibold border border-white/20 ripple" onclick="addMoney()">
+                                <i class="fas fa-plus mr-2"></i>Add Money
+                            </button>
+                            <button class="flex-1 py-3 rounded-xl bg-white/10 text-white font-semibold border border-white/20 ripple" onclick="viewHistory()">
+                                <i class="fas fa-history mr-2"></i>History
+                            </button>
+                        </div>
+                    </div>
+                    <div id="transactionList">
+                        <div class="shimmer h-16 rounded-2xl mb-3"></div>
+                        <div class="shimmer h-16 rounded-2xl"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Screen -->
+            <div class="screen" id="profileScreen">
+                <div class="sticky top-0 z-50 bg-gradient-to-b from-[#0a0a0a] to-transparent pt-4 pb-2 px-4">
+                    <h2 class="text-xl font-bold text-white">Profile</h2>
+                </div>
+                <div class="p-4">
+                    <div class="card text-center py-8 mb-6">
+                        <div class="w-24 h-24 mx-auto mb-4 rounded-full gold-gradient flex items-center justify-center text-black text-3xl font-bold" id="profileAvatar">U</div>
+                        <h3 class="text-2xl font-bold text-white mb-1" id="profileName">User</h3>
+                        <p class="text-gray-400 mb-3" id="profileEmail">user@email.com</p>
+                        <span class="inline-block px-4 py-1 rounded-full bg-white/10 text-gold-text text-sm font-semibold border border-gold/30" id="profileRole">User</span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="card flex items-center gap-4 py-4 cursor-pointer ripple" onclick="showScreen('wallet')">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white">
+                                <i class="fas fa-wallet text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-white">My Wallet</h4>
+                                <p class="text-sm text-gray-400">View balance & transactions</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                        
+                        <div class="card flex items-center gap-4 py-4 cursor-pointer ripple">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center text-white">
+                                <i class="fas fa-map-marker-alt text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-white">Saved Addresses</h4>
+                                <p class="text-sm text-gray-400">Manage your locations</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                        
+                        <div class="card flex items-center gap-4 py-4 cursor-pointer ripple">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white">
+                                <i class="fas fa-headset text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-white">Help & Support</h4>
+                                <p class="text-sm text-gray-400">Contact customer care</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-red-500 to-red-700 text-white font-bold text-lg shadow-lg ripple" onclick="logout()">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Admin Panel -->
+            <div class="screen admin-panel" id="adminScreen">
+                <div class="sticky top-0 z-50 bg-[#0d1b2a] pt-4 pb-2 px-4 border-b border-white/10">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-bold text-white"><i class="fas fa-shield-alt gold-text mr-2"></i>Admin Panel</h2>
+                        <button onclick="logout()" class="text-sm text-gray-400">Logout</button>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <!-- Stats -->
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="stat-card">
+                            <h3 class="stat-number" id="adminUsers">0</h3>
+                            <p class="text-gray-400 text-sm">Users</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 class="stat-number text-green-400" id="adminProviders">0</h3>
+                            <p class="text-gray-400 text-sm">Providers</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 class="stat-number text-blue-400" id="adminBookings">0</h3>
+                            <p class="text-gray-400 text-sm">Bookings</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 class="stat-number text-orange-400" id="adminPending">0</h3>
+                            <p class="text-gray-400 text-sm">Pending</p>
+                        </div>
+                    </div>
+
+                    <!-- Commission Settings -->
+                    <div class="card mb-6">
+                        <h3 class="text-lg font-bold text-white mb-4"><i class="fas fa-percentage gold-text mr-2"></i>Commission Settings</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-white/5">
+                                <div>
+                                    <p class="text-white font-medium">Home & Taxi Services</p>
+                                    <p class="text-xs text-gray-400">Electrician, Plumber, Taxi, etc.</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" id="commHome" value="10" class="w-16 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-center text-white" onchange="updateCommission('home', this.value)">
+                                    <span class="text-gray-400">%</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-white/5">
+                                <div>
+                                    <p class="text-white font-medium">Other Services</p>
+                                    <p class="text-xs text-gray-400">Photo, Event, DJ, Makeup, etc.</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" id="commOther" value="16" class="w-16 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-center text-white" onchange="updateCommission('other', this.value)">
+                                    <span class="text-gray-400">%</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-white/5">
+                                <div>
+                                    <p class="text-white font-medium">Emergency Services</p>
+                                    <p class="text-xs text-gray-400">24/7 urgent services</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" id="commEmergency" value="10" class="w-16 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-center text-white" onchange="updateCommission('emergency', this.value)">
+                                    <span class="text-gray-400">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-3"><i class="fas fa-info-circle mr-1"></i>Changes apply to new bookings only</p>
+                    </div>
+
+                    <!-- System Settings -->
+                    <div class="card mb-6">
+                        <h3 class="text-lg font-bold text-white mb-4"><i class="fas fa-cog gold-text mr-2"></i>System Settings</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-white font-medium">Grace Period</p>
+                                    <p class="text-xs text-gray-400">Time before penalties apply</p>
+                                </div>
+                                <select id="gracePeriod" class="bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white" onchange="updateSetting('gracePeriod', this.value)">
+                                    <option value="5">5 min</option>
+                                    <option value="10" selected>10 min</option>
+                                    <option value="15">15 min</option>
+                                    <option value="20">20 min</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-white font-medium">Movement Check</p>
+                                    <p class="text-xs text-gray-400">GPS tracking interval</p>
+                                </div>
+                                <select id="movementCheck" class="bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white" onchange="updateSetting('movementCheck', this.value)">
+                                    <option value="15">15 sec</option>
+                                    <option value="30" selected>30 sec</option>
+                                    <option value="60">1 min</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-white font-medium">Min Wallet Balance</p>
+                                    <p class="text-xs text-gray-400">Provider cutoff limit</p>
+                                </div>
+                                <select id="minWallet" class="bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white" onchange="updateSetting('minWallet', this.value)">
+                                    <option value="-500">-₹500</option>
+                                    <option value="-200" selected>-₹200</option>
+                                    <option value="0">₹0</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pending Providers -->
+                    <div class="card">
+                        <h3 class="text-lg font-bold text-white mb-4"><i class="fas fa-user-clock gold-text mr-2"></i>Pending Providers</h3>
+                        <div id="pendingProvidersList">
+                            <p class="text-gray-500 text-center py-4">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Provider Dashboard -->
+            <div class="screen" id="providerScreen">
+                <div class="sticky top-0 z-50 bg-gradient-to-b from-[#0a0a0a] to-transparent pt-4 pb-2 px-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-bold text-white">Provider Dashboard</h2>
+                            <p class="text-sm text-green-400" id="providerStatus">● Available</p>
+                        </div>
+                        <button onclick="logout()" class="text-sm text-gray-400">Logout</button>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <!-- Availability Toggle -->
+                    <div class="card mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="font-bold text-white">Availability</h3>
+                                <p class="text-sm text-gray-400">Turn off when not working</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="availableToggle" class="sr-only peer" checked onchange="toggleAvailability()">
+                                <div class="w-14 h-7 bg-gray-700 peer-focus:ring-4 peer-focus:ring-green-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-green-600"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-white/5">
+                            <span class="text-white">Working Hours</span>
+                            <button class="text-gold-text font-semibold" onclick="editWorkingHours()">9 AM - 6 PM</button>
+                        </div>
+                    </div>
+
+                    <!-- Wallet -->
+                    <div class="card mb-6">
+                        <h3 class="font-bold text-white mb-2">Wallet Balance</h3>
+                        <p class="text-4xl font-black gold-text mb-2" id="providerWallet">₹0</p>
+                        <p class="text-xs text-red-400 hidden" id="walletWarning">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>Below -₹200. Cannot accept jobs.
+                        </p>
+                        <button class="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-700 text-white font-bold ripple" onclick="withdrawMoney()">
+                            <i class="fas fa-money-bill-wave mr-2"></i>Withdraw
+                        </button>
+                    </div>
+
+                    <!-- Service Requests -->
+                    <div class="card mb-6">
+                        <h3 class="font-bold text-white mb-4"><i class="fas fa-bell gold-text mr-2"></i>New Requests</h3>
+                        <div id="providerRequests">
+                            <p class="text-gray-500 text-center py-4">No new requests</p>
+                        </div>
+                    </div>
+
+                    <!-- My Jobs -->
+                    <div class="card">
+                        <h3 class="font-bold text-white mb-4"><i class="fas fa-clipboard-list gold-text mr-2"></i>My Jobs</h3>
+                        <div id="providerJobs">
+                            <p class="text-gray-500 text-center py-4">No active jobs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Navigation -->
+            <nav class="bottom-nav" id="bottomNav">
+                <div class="nav-item active" onclick="showScreen('home')">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </div>
+                <div class="nav-item" onclick="showScreen('bookings')">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Bookings</span>
+                </div>
+                <div class="nav-item" onclick="showScreen('wallet')">
+                    <i class="fas fa-wallet"></i>
+                    <span>Wallet</span>
+                </div>
+                <div class="nav-item" onclick="showScreen('profile')">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </div>
+            </nav>
+
+            <!-- Emergency Button -->
+            <button class="emergency-btn ripple" onclick="showEmergency()" id="emergencyBtn">
+                <i class="fas fa-exclamation"></i>
+            </button>
+        </div>
+
+        <!-- Booking Modal -->
+        <div class="modal" id="bookingModal">
+            <div class="modal-content">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold text-white" id="modalServiceName">Book Service</h3>
+                    <button onclick="closeModal()" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-5">
+                    <div id="map" class="h-48 rounded-2xl overflow-hidden border border-white/10"></div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Date & Time</label>
+                        <input type="datetime-local" id="bookingDateTime" class="input-field">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Description</label>
+                        <textarea id="bookingDesc" class="input-field" rows="3" placeholder="Describe your requirement..."></textarea>
+                    </div>
+                    
+                    <div class="p-4 rounded-2xl bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30">
+                        <p class="text-sm text-yellow-200 mb-1">Estimated Price</p>
+                        <p class="text-3xl font-bold gold-text" id="modalPrice">₹0</p>
+                    </div>
+                    
+                    <button class="btn-primary btn-gold ripple" onclick="submitBooking()" id="submitBookingBtn">
+                        <i class="fas fa-check-circle mr-2"></i>Confirm Booking
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Modal -->
+        <div class="modal" id="emergencyModal">
+            <div class="modal-content">
+                <h3 class="text-2xl font-bold text-red-500 mb-6 flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-3"></i>Emergency Services
+                </h3>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="service-card border-2 border-red-500/50 ripple" onclick="bookEmergency('em-electrician')">
+                        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white text-2xl mx-auto mb-3">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <p class="text-center text-white font-semibold">Electrician</p>
+                    </div>
+                    <div class="service-card border-2 border-red-500/50 ripple" onclick="bookEmergency('em-plumber')">
+                        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white text-2xl mx-auto mb-3">
+                            <i class="fas fa-faucet"></i>
+                        </div>
+                        <p class="text-center text-white font-semibold">Plumber</p>
+                    </div>
+                    <div class="service-card border-2 border-red-500/50 ripple" onclick="bookEmergency('em-taxi')">
+                        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white text-2xl mx-auto mb-3">
+                            <i class="fas fa-taxi"></i>
+                        </div>
+                        <p class="text-center text-white font-semibold">Taxi</p>
+                    </div>
+                    <div class="service-card border-2 border-red-500/50 ripple" onclick="bookEmergency('em-ambulance')">
+                        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white text-2xl mx-auto mb-3">
+                            <i class="fas fa-ambulance"></i>
+                        </div>
+                        <p class="text-center text-white font-semibold">Ambulance</p>
+                    </div>
+                </div>
+                <button class="w-full py-4 rounded-xl border-2 border-white/20 text-white font-semibold ripple" onclick="closeEmergency()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== FIREBASE CONFIG ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDPLU-Ig8B-0zqTPd3IC0cIscVWdkC7ReE",
+            authDomain: "click-one-solution-7af44.firebaseapp.com",
+            projectId: "click-one-solution-7af44",
+            storageBucket: "click-one-solution-7af44.firebasestorage.app",
+            messagingSenderId: "811454673502",
+            appId: "1:811454673502:web:47a3ca70943b2ce7667acf"
         };
-        
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const messaging = firebase.messaging();
+
+        // ==================== GLOBAL STATE ====================
+        let currentUser = null;
+        let userRole = 'user';
+        let map = null;
+        let markersLayer = null;
+        let userLocation = { lat: 26.8467, lng: 80.9462 };
+        let selectedService = null;
+        let isSignUp = false;
+        let settings = {
+            commission: { home: 10, taxi: 10, other: 16, emergency: 10 },
+            gracePeriod: 10,
+            movementCheck: 30,
+            minWallet: -200,
+            latePenalty: 50
+        };
+        let unsubscribeBookings = null;
+        let unsubscribeRequests = null;
+
+        // ==================== SERVICE DATA ====================
+        const services = {
+            home: [
+                { id: 'electrician', name: 'Electrician', icon: 'fa-bolt', color: 'from-blue-500 to-blue-700', price: '₹200-500' },
+                { id: 'plumber', name: 'Plumber', icon: 'fa-faucet', color: 'from-cyan-500 to-cyan-700', price: '₹250-600' },
+                { id: 'carpenter', name: 'Carpenter', icon: 'fa-hammer', color: 'from-amber-600 to-amber-800', price: '₹300-800' },
+                { id: 'ac', name: 'AC Repair', icon: 'fa-snowflake', color: 'from-sky-400 to-sky-600', price: '₹500-1500' },
+                { id: 'cleaning', name: 'Cleaning', icon: 'fa-broom', color: 'from-emerald-500 to-emerald-700', price: '₹400-1200' },
+                { id: 'painter', name: 'Painter', icon: 'fa-paint-roller', color: 'from-pink-500 to-pink-700', price: '₹1000-5000' },
+                { id: 'cctv', name: 'CCTV', icon: 'fa-video', color: 'from-violet-500 to-violet-700', price: '₹800-2000' },
+                { id: 'construction', name: 'Construction', icon: 'fa-hard-hat', color: 'from-orange-600 to-orange-800', price: 'Custom' }
+            ],
+            taxi: [
+                { id: 'local', name: 'Local Ride', icon: 'fa-taxi', color: 'from-green-500 to-green-700', price: '₹50/km' },
+                { id: 'outstation', name: 'Outstation', icon: 'fa-road', color: 'from-teal-500 to-teal-700', price: '₹12/km' },
+                { id: 'bike', name: 'Bike Taxi', icon: 'fa-motorcycle', color: 'from-lime-500 to-lime-700', price: '₹20/km' },
+                { id: 'auto', name: 'Auto', icon: 'fa-taxi', color: 'from-yellow-500 to-yellow-700', price: 'Meter+₹10' }
+            ],
+            other: [
+                { id: 'photo', name: 'Photographer', icon: 'fa-camera', color: 'from-purple-500 to-purple-700', price: '₹2000+' },
+                { id: 'event', name: 'Event Planner', icon: 'fa-calendar', color: 'from-indigo-500 to-indigo-700', price: '₹5000+' },
+                { id: 'dj', name: 'DJ', icon: 'fa-music', color: 'from-fuchsia-500 to-fuchsia-700', price: '₹3000+' },
+                { id: 'makeup', name: 'Makeup', icon: 'fa-magic', color: 'from-rose-500 to-rose-700', price: '₹1500+' }
+            ]
+        };
+
+        // ==================== INITIALIZATION ====================
+        window.onload = function() {
+            renderServices();
+            setupOfflineDetection();
+            
+            // Check auth state
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    loadUserData(user.uid);
+                } else {
+                    document.getElementById('loadingScreen').style.display = 'none';
                 }
             });
-        }, observerOptions);
-        
-        document.querySelectorAll('.fade-in').forEach(el => {
-            observer.observe(el);
-        });
-        
-        // Navbar background on scroll
-        const navbar = document.getElementById('navbar');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                navbar.style.boxShadow = '0 2px 20px rgba(255, 133, 162, 0.2)';
-            } else {
-                navbar.style.boxShadow = '0 2px 20px rgba(255, 133, 162, 0.1)';
+
+            // Set min datetime for booking
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('bookingDateTime').min = now.toISOString().slice(0, 16);
+            document.getElementById('bookingDateTime').value = now.toISOString().slice(0, 16);
+        };
+
+        function renderServices() {
+            const createCard = (service, category) => `
+                <div class="service-card flex flex-col items-center p-4 ripple" onclick="openBooking('${service.id}', '${service.name}', '${service.price}', '${category}')">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br ${service.color} flex items-center justify-center text-white text-xl mb-2 shadow-lg">
+                        <i class="fas ${service.icon}"></i>
+                    </div>
+                    <span class="text-xs text-gray-300 text-center">${service.name}</span>
+                </div>
+            `;
+            
+            document.getElementById('homeServices').innerHTML = services.home.map(s => createCard(s, 'home')).join('');
+            document.getElementById('taxiServices').innerHTML = services.taxi.map(s => createCard(s, 'taxi')).join('');
+            document.getElementById('otherServices').innerHTML = services.other.map(s => createCard(s, 'other')).join('');
+        }
+
+        // ==================== AUTH FUNCTIONS ====================
+        function setRole(role) {
+            userRole = role;
+            const roles = ['User', 'Provider', 'Admin'];
+            const btnIds = ['btnUser', 'btnProvider', 'btnAdmin'];
+            
+            btnIds.forEach((id, index) => {
+                const btn = document.getElementById(id);
+                if (roles[index].toLowerCase() === role) {
+                    btn.className = 'flex-1 py-3.5 rounded-xl text-sm font-bold transition-all bg-gradient-to-r from-yellow-400 to-orange-500 text-black shadow-lg';
+                } else {
+                    btn.className = 'flex-1 py-3.5 rounded-xl text-sm font-bold transition-all text-gray-400 hover:text-white';
+                }
+            });
+        }
+
+        function toggleAuthMode() {
+            isSignUp = !isSignUp;
+            document.getElementById('nameField').style.display = isSignUp ? 'block' : 'none';
+            document.getElementById('authBtn').innerHTML = isSignUp ? '<i class="fas fa-user-plus mr-2"></i>Create Account' : '<i class="fas fa-sign-in-alt mr-2"></i>Continue';
+            document.getElementById('authToggle').textContent = isSignUp ? 'Already have an account?' : 'Create account';
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value;
+            const name = document.getElementById('nameInput').value.trim();
+            const btn = document.getElementById('authBtn');
+            
+            if (!email || !password) {
+                showToast('Please enter email and password');
+                return;
             }
-        });
-        
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
+            if (isSignUp && !name) {
+                showToast('Please enter your name');
+                return;
+            }
+            if (password.length < 6) {
+                showToast('Password must be at least 6 characters');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+
+            try {
+                let userCredential;
+                if (isSignUp) {
+                    userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    await db.collection('users').doc(userCredential.user.uid).set({
+                        email: email,
+                        name: name,
+                        role: userRole,
+                        wallet: 0,
+                        approved: userRole === 'user' || userRole === 'admin',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    showToast('Account created successfully!');
+                } else {
+                    userCredential = await auth.signInWithEmailAndPassword(email, password);
+                    await db.collection('users').doc(userCredential.user.uid).update({
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 }
+            } catch (error) {
+                showToast(error.message);
+                btn.disabled = false;
+                btn.innerHTML = isSignUp ? '<i class="fas fa-user-plus mr-2"></i>Create Account' : '<i class="fas fa-sign-in-alt mr-2"></i>Continue';
+            }
+        }
+
+        async function signInWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                const result = await auth.signInWithPopup(provider);
+                const user = result.user;
+                
+                // Check if user exists
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (!userDoc.exists) {
+                    await db.collection('users').doc(user.uid).set({
+                        email: user.email,
+                        name: user.displayName || 'User',
+                        role: userRole,
+                        wallet: 0,
+                        approved: userRole === 'user' || userRole === 'admin',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } else {
+                    await db.collection('users').doc(user.uid).update({
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+            } catch (error) {
+                showToast(error.message);
+            }
+        }
+
+        function showForgotPassword() {
+            const email = prompt('Enter your email to reset password:');
+            if (email) {
+                auth.sendPasswordResetEmail(email)
+                    .then(() => showToast('Password reset email sent!'))
+                    .catch(err => showToast(err.message));
+            }
+        }
+
+        // ==================== USER DATA ====================
+        async function loadUserData(uid) {
+            try {
+                const doc = await db.collection('users').doc(uid).get();
+                if (!doc.exists) {
+                    showToast('User data not found');
+                    await auth.signOut();
+                    return;
+                }
+
+                currentUser = { ...doc.data(), uid: uid };
+                
+                if (currentUser.role === 'provider' && !currentUser.approved) {
+                    showToast('Account pending admin approval');
+                    await auth.signOut();
+                    return;
+                }
+
+                // Load settings
+                const settingsDoc = await db.collection('settings').doc('config').get();
+                if (settingsDoc.exists) {
+                    settings = { ...settings, ...settingsDoc.data() };
+                }
+
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('loadingScreen').style.display = 'none';
+                
+                updateUI();
+                setupRealtimeListeners();
+                
+                if (currentUser.role === 'admin') {
+                    document.getElementById('bottomNav').style.display = 'none';
+                    document.getElementById('emergencyBtn').style.display = 'none';
+                    showScreen('admin');
+                    loadAdminData();
+                } else if (currentUser.role === 'provider') {
+                    document.getElementById('bottomNav').style.display = 'none';
+                    document.getElementById('emergencyBtn').style.display = 'none';
+                    showScreen('provider');
+                    loadProviderData();
+                    startLocationTracking();
+                } else {
+                    showScreen('home');
+                    getLocation();
+                    loadNearbyProviders();
+                }
+
+                // Request notification permission
+                requestNotificationPermission();
+            } catch (error) {
+                showToast('Error loading user data: ' + error.message);
+                document.getElementById('loadingScreen').style.display = 'none';
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('userNameDisplay').textContent = currentUser.name || 'User';
+            document.getElementById('userAvatar').textContent = (currentUser.name || 'U').charAt(0).toUpperCase();
+            document.getElementById('profileName').textContent = currentUser.name || 'User';
+            document.getElementById('profileEmail').textContent = currentUser.email;
+            document.getElementById('profileRole').textContent = (currentUser.role || 'User').toUpperCase();
+            document.getElementById('profileAvatar').textContent = (currentUser.name || 'U').charAt(0).toUpperCase();
+        }
+
+        // ==================== NAVIGATION ====================
+        function showScreen(screen) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            const screenMap = {
+                'home': 'homeScreen',
+                'bookings': 'bookingsScreen',
+                'wallet': 'walletScreen',
+                'profile': 'profileScreen',
+                'admin': 'adminScreen',
+                'provider': 'providerScreen'
+            };
+            
+            const target = document.getElementById(screenMap[screen]);
+            if (target) target.classList.add('active');
+            
+            const navIndex = ['home', 'bookings', 'wallet', 'profile'].indexOf(screen);
+            if (navIndex >= 0 && document.getElementById('bottomNav').style.display !== 'none') {
+                document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
+            }
+            
+            if (screen === 'bookings') loadBookings();
+            if (screen === 'wallet') loadWallet();
+            if (screen === 'admin') loadAdminData();
+            if (screen === 'provider') loadProviderData();
+        }
+
+        // ==================== REAL-TIME LISTENERS ====================
+        function setupRealtimeListeners() {
+            if (!currentUser) return;
+            
+            // Clean up existing listeners
+            if (unsubscribeBookings) unsubscribeBookings();
+            if (unsubscribeRequests) unsubscribeRequests();
+            
+            if (currentUser.role === 'user') {
+                // Listen to user's bookings
+                unsubscribeBookings = db.collection('bookings')
+                    .where('customerId', '==', currentUser.uid)
+                    .orderBy('createdAt', 'desc')
+                    .onSnapshot((snapshot) => {
+                        snapshot.docChanges().forEach((change) => {
+                            if (change.type === 'modified' || change.type === 'added') {
+                                const data = change.doc.data();
+                                if (data.status === 'accepted' && data.providerName) {
+                                    showToast(`Provider ${data.providerName} accepted your booking!`);
+                                    sendNotification('Booking Accepted', `${data.providerName} is on the way`);
+                                }
+                                if (data.status === 'arrived') {
+                                    showToast('Provider has arrived!');
+                                    sendNotification('Provider Arrived', 'Your service provider is at the location');
+                                }
+                                if (data.status === 'completed') {
+                                    showToast('Service completed!');
+                                    sendNotification('Service Completed', 'Your booking has been completed');
+                                }
+                            }
+                        });
+                        loadBookings();
+                    }, (error) => {
+                        console.error('Bookings listener error:', error);
+                    });
+            } else if (currentUser.role === 'provider') {
+                // Listen to new requests near provider
+                unsubscribeRequests = db.collection('bookings')
+                    .where('status', '==', 'pending')
+                    .where('category', 'in', currentUser.services || ['home', 'taxi'])
+                    .onSnapshot((snapshot) => {
+                        const requests = [];
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            // Check if within 10km
+                            if (data.location && currentUser.location) {
+                                const distance = calculateDistance(
+                                    data.location.lat, data.location.lng,
+                                    currentUser.location.lat, currentUser.location.lng
+                                );
+                                if (distance <= 10) {
+                                    requests.push({ id: doc.id, ...data, distance: distance.toFixed(1) });
+                                }
+                            }
+                        });
+                        renderProviderRequests(requests);
+                    }, (error) => {
+                        console.error('Requests listener error:', error);
+                    });
+                    
+                // Listen to provider's jobs
+                unsubscribeBookings = db.collection('bookings')
+                    .where('providerId', '==', currentUser.uid)
+                    .where('status', 'in', ['accepted', 'ongoing', 'arrived'])
+                    .onSnapshot((snapshot) => {
+                        renderProviderJobs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                    });
+            }
+        }
+
+        // ==================== BOOKING FUNCTIONS ====================
+        function openBooking(serviceId, name, price, category) {
+            selectedService = { id: serviceId, name: name, price: price, category: category };
+            document.getElementById('modalServiceName').textContent = name;
+            document.getElementById('modalPrice').textContent = price;
+            document.getElementById('bookingModal').classList.add('active');
+            
+            setTimeout(() => {
+                initMap();
+            }, 300);
+        }
+
+        function initMap() {
+            if (!map) {
+                map = L.map('map').setView([userLocation.lat, userLocation.lng], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+                
+                markersLayer = L.markerClusterGroup();
+                map.addLayer(markersLayer);
+            }
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    map.setView([userLocation.lat, userLocation.lng], 15);
+                    L.marker([userLocation.lat, userLocation.lng]).addTo(map)
+                        .bindPopup('Your Location').openPopup();
+                }, (err) => {
+                    showToast('Location access denied');
+                });
+            }
+        }
+
+        async function submitBooking() {
+            const dateTime = document.getElementById('bookingDateTime').value;
+            const desc = document.getElementById('bookingDesc').value;
+            const btn = document.getElementById('submitBookingBtn');
+            
+            if (!dateTime) {
+                showToast('Please select date and time');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating...';
+
+            try {
+                const booking = {
+                    customerId: currentUser.uid,
+                    customerName: currentUser.name,
+                    customerEmail: currentUser.email,
+                    customerPhone: currentUser.phone || '',
+                    service: selectedService.id,
+                    serviceName: selectedService.name,
+                    category: selectedService.category,
+                    price: selectedService.price,
+                    scheduledTime: new Date(dateTime),
+                    description: desc,
+                    location: userLocation,
+                    address: currentUser.address || '',
+                    status: 'pending',
+                    commission: settings.commission[selectedService.category] || 10,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    providerId: null,
+                    providerName: null,
+                    providerPhone: null,
+                    providerLocation: null,
+                    warnings: 0,
+                    penalty: 0,
+                    paymentStatus: 'pending',
+                    actualPrice: null
+                };
+
+                const docRef = await db.collection('bookings').add(booking);
+                
+                // Deduct wallet if prepaid
+                // await processPayment(docRef.id, 'hold');
+                
+                closeModal();
+                showToast('Booking created! Finding providers...');
+                
+                // Find and assign provider automatically
+                findAndAssignProvider(docRef.id, booking);
+            } catch (error) {
+                showToast('Error: ' + error.message);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Confirm Booking';
+            }
+        }
+
+        async function findAndAssignProvider(bookingId, bookingData) {
+            try {
+                // Find available providers for this service category
+                const providersSnapshot = await db.collection('users')
+                    .where('role', '==', 'provider')
+                    .where('approved', '==', true)
+                    .where('available', '==', true)
+                    .where('services', 'array-contains', bookingData.category)
+                    .get();
+                
+                if (providersSnapshot.empty) {
+                    await db.collection('bookings').doc(bookingId).update({
+                        status: 'no_provider',
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    showToast('No providers available now. Try again later.');
+                    return;
+                }
+
+                // Calculate distances and find nearest
+                let nearestProvider = null;
+                let minDistance = Infinity;
+                
+                providersSnapshot.forEach(doc => {
+                    const provider = doc.data();
+                    if (provider.location && provider.wallet > settings.minWallet) {
+                        const distance = calculateDistance(
+                            bookingData.location.lat, bookingData.location.lng,
+                            provider.location.lat, provider.location.lng
+                        );
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            nearestProvider = { id: doc.id, ...provider };
+                        }
+                    }
+                });
+
+                if (!nearestProvider) {
+                    await db.collection('bookings').doc(bookingId).update({
+                        status: 'no_provider',
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    showToast('No providers available in your area');
+                    return;
+                }
+
+                // Assign provider
+                await db.collection('bookings').doc(bookingId).update({
+                    status: 'accepted',
+                    providerId: nearestProvider.id,
+                    providerName: nearestProvider.name,
+                    providerPhone: nearestProvider.phone || '',
+                    providerLocation: nearestProvider.location,
+                    acceptedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Notify provider via FCM
+                if (nearestProvider.fcmToken) {
+                    await sendFCMNotification(nearestProvider.fcmToken, {
+                        title: 'New Booking Request',
+                        body: `New ${bookingData.serviceName} booking near you (${minDistance.toFixed(1)} km)`,
+                        data: { bookingId: bookingId, type: 'new_booking' }
+                    });
+                }
+
+                showToast(`Provider ${nearestProvider.name} assigned!`);
+            } catch (error) {
+                console.error('Error assigning provider:', error);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('bookingModal').classList.remove('active');
+            document.getElementById('submitBookingBtn').disabled = false;
+            document.getElementById('submitBookingBtn').innerHTML = '<i class="fas fa-check-circle mr-2"></i>Confirm Booking';
+        }
+
+        function showEmergency() {
+            document.getElementById('emergencyModal').classList.add('active');
+        }
+
+        function closeEmergency() {
+            document.getElementById('emergencyModal').classList.remove('active');
+        }
+
+        function bookEmergency(service) {
+            closeEmergency();
+            const names = {
+                'em-electrician': 'Emergency Electrician',
+                'em-plumber': 'Emergency Plumber',
+                'em-taxi': 'Emergency Taxi',
+                'em-ambulance': 'Emergency Ambulance'
+            };
+            openBooking(service, names[service], '₹500+', 'emergency');
+        }
+
+        // ==================== BOOKINGS & WALLET ====================
+        async function loadBookings() {
+            try {
+                const snapshot = await db.collection('bookings')
+                    .where('customerId', '==', currentUser.uid)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                const container = document.getElementById('allBookings');
+                const recentContainer = document.getElementById('recentBookings');
+                
+                if (snapshot.empty) {
+                    const emptyHtml = '<p class="text-gray-500 text-center py-8">No bookings yet</p>';
+                    container.innerHTML = emptyHtml;
+                    recentContainer.innerHTML = emptyHtml;
+                    return;
+                }
+
+                let html = '';
+                let recentHtml = '';
+                let count = 0;
+                
+                snapshot.forEach(doc => {
+                    const b = doc.data();
+                    const statusClass = 'badge-' + (b.status || 'pending');
+                    const date = b.scheduledTime?.toDate().toLocaleString() || 'Pending';
+                    
+                    const card = `
+                        <div class="card mb-3">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h4 class="font-bold text-white">${b.serviceName}</h4>
+                                    <p class="text-xs text-gray-500">${doc.id.substring(0, 8)}</p>
+                                </div>
+                                <span class="badge ${statusClass}">${(b.status || 'PENDING').toUpperCase()}</span>
+                            </div>
+                            <p class="text-sm text-gray-400 mb-2"><i class="far fa-clock mr-2"></i>${date}</p>
+                            ${b.providerName ? `<p class="text-sm text-gray-300 mb-2"><i class="fas fa-user mr-2"></i>${b.providerName}</p>` : ''}
+                            ${b.status === 'completed' ? `
+                                <div class="flex gap-2 mt-3">
+                                    <button class="flex-1 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold" onclick="rateBooking('${doc.id}')">Rate</button>
+                                    <button class="flex-1 py-2 rounded-lg bg-white/10 text-white text-sm font-semibold" onclick="rebook('${doc.id}')">Rebook</button>
+                                </div>
+                            ` : ''}
+                            ${b.status === 'pending' ? `
+                                <button class="w-full mt-3 py-2 rounded-lg bg-red-600/20 text-red-400 text-sm font-semibold border border-red-600/30" onclick="cancelBooking('${doc.id}')">Cancel</button>
+                            ` : ''}
+                        </div>
+                    `;
+                    
+                    html += card;
+                    if (count < 3) recentHtml += card;
+                    count++;
+                });
+                
+                container.innerHTML = html;
+                recentContainer.innerHTML = recentHtml;
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+            }
+        }
+
+        async function cancelBooking(bookingId) {
+            if (!confirm('Are you sure you want to cancel this booking?')) return;
+            
+            try {
+                await db.collection('bookings').doc(bookingId).update({
+                    status: 'cancelled',
+                    cancelledAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    cancelledBy: currentUser.uid
+                });
+                showToast('Booking cancelled');
+            } catch (error) {
+                showToast('Error: ' + error.message);
+            }
+        }
+
+        async function rateBooking(bookingId) {
+            const rating = prompt('Rate your experience (1-5):');
+            if (rating && !isNaN(rating) && rating >= 1 && rating <= 5) {
+                try {
+                    await db.collection('bookings').doc(bookingId).update({
+                        rating: parseInt(rating),
+                        ratedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    showToast('Thank you for your rating!');
+                } catch (error) {
+                    showToast('Error: ' + error.message);
+                }
+            }
+        }
+
+        async function loadWallet() {
+            try {
+                const doc = await db.collection('users').doc(currentUser.uid).get();
+                const wallet = doc.data()?.wallet || 0;
+                document.getElementById('walletBalance').textContent = '₹' + wallet;
+                
+                // Load transactions
+                const txSnapshot = await db.collection('transactions')
+                    .where('userId', '==', currentUser.uid)
+                    .orderBy('timestamp', 'desc')
+                    .limit(10)
+                    .get();
+                    
+                const txList = document.getElementById('transactionList');
+                if (txSnapshot.empty) {
+                    txList.innerHTML = '<p class="text-gray-500 text-center py-4">No transactions yet</p>';
+                    return;
+                }
+                
+                let html = '<div class="space-y-3">';
+                txSnapshot.forEach(doc => {
+                    const tx = doc.data();
+                    const isCredit = tx.type === 'credit';
+                    html += `
+                        <div class="card flex justify-between items-center py-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full ${isCredit ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'} flex items-center justify-center">
+                                    <i class="fas ${isCredit ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-white text-sm">${tx.description}</p>
+                                    <p class="text-xs text-gray-400">${tx.timestamp?.toDate().toLocaleDateString() || 'Just now'}</p>
+                                </div>
+                            </div>
+                            <span class="font-bold ${isCredit ? 'text-green-400' : 'text-red-400'}">
+                                ${isCredit ? '+' : '-'}₹${Math.abs(tx.amount)}
+                            </span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                txList.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading wallet:', error);
+            }
+        }
+
+        async function addMoney() {
+            const amount = prompt('Enter amount to add (₹):');
+            if (!amount || isNaN(amount) || amount <= 0) {
+                showToast('Please enter valid amount');
+                return;
+            }
+            
+            // In production, integrate with Razorpay/Stripe here
+            try {
+                const newBalance = (currentUser.wallet || 0) + parseInt(amount);
+                await db.collection('users').doc(currentUser.uid).update({ wallet: newBalance });
+                
+                // Record transaction
+                await db.collection('transactions').add({
+                    userId: currentUser.uid,
+                    type: 'credit',
+                    amount: parseInt(amount),
+                    description: 'Wallet recharge',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                currentUser.wallet = newBalance;
+                loadWallet();
+                showToast('₹' + amount + ' added successfully');
+            } catch (error) {
+                showToast('Error: ' + error.message);
+            }
+        }
+
+        // ==================== ADMIN FUNCTIONS ====================
+        async function loadAdminData() {
+            try {
+                // Get stats
+                const usersSnap = await db.collection('users').get();
+                let users = 0, providers = 0, pending = 0;
+                
+                usersSnap.forEach(doc => {
+                    const data = doc.data();
+                    if (data.role === 'user') users++;
+                    if (data.role === 'provider') {
+                        if (data.approved) providers++;
+                        else pending++;
+                    }
+                });
+                
+                document.getElementById('adminUsers').textContent = users;
+                document.getElementById('adminProviders').textContent = providers;
+                document.getElementById('adminPending').textContent = pending;
+                
+                const bookingsSnap = await db.collection('bookings').get();
+                document.getElementById('adminBookings').textContent = bookingsSnap.size;
+                
+                // Load pending providers
+                const pendingSnap = await db.collection('users')
+                    .where('role', '==', 'provider')
+                    .where('approved', '==', false)
+                    .get();
+                    
+                const pendingContainer = document.getElementById('pendingProvidersList');
+                
+                if (pendingSnap.empty) {
+                    pendingContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No pending approvals</p>';
+                } else {
+                    let html = '';
+                    pendingSnap.forEach(doc => {
+                        const p = doc.data();
+                        html += `
+                            <div class="flex justify-between items-center py-3 border-b border-white/10">
+                                <div>
+                                    <p class="text-white font-medium">${p.name}</p>
+                                    <p class="text-xs text-gray-400">${p.email}</p>
+                                    <p class="text-xs text-gray-500">${p.phone || 'No phone'}</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="approveProvider('${doc.id}')" class="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold">Approve</button>
+                                    <button onclick="rejectProvider('${doc.id}')" class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold">Reject</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    pendingContainer.innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+            }
+        }
+
+        async function approveProvider(uid) {
+            try {
+                await db.collection('users').doc(uid).update({ 
+                    approved: true,
+                    approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                showToast('Provider approved');
+                loadAdminData();
+            } catch (error) {
+                showToast('Error: ' + error.message);
+            }
+        }
+
+        async function rejectProvider(uid) {
+            if (!confirm('Are you sure you want to reject this provider?')) return;
+            try {
+                await db.collection('users').doc(uid).delete();
+                showToast('Provider rejected');
+                loadAdminData();
+            } catch (error) {
+                showToast('Error: ' + error.message);
+            }
+        }
+
+        async function updateCommission(category, value) {
+            try {
+                const commRef = db.collection('settings').doc('config');
+                const doc = await commRef.get();
+                const commission = doc.data()?.commission || {};
+                commission[category] = parseInt(value);
+                await commRef.set({ commission }, { merge: true });
+                settings.commission[category] = parseInt(value);
+                showToast(category + ' commission updated to ' + value + '%');
+            } catch (error) {
+                showToast('Error: ' + error.message);
+            }
+        }
+
+        async function updateSetting(key, value) {
+            try {
+                await db.collection('settings').doc('config').set({
+                    [key]: parseInt(value)
+                }, { merge: true });
+                settings[key] = parseInt(value);
+                showToast('Setting updated');
+            } catch (error) {
+                showToast('Error: ' + error.message);
+            }
+        }
+
+        // ==================== PROVIDER FUNCTIONS ====================
+        async function loadProviderData() {
+            try {
+                const doc = await db.collection('users').doc(currentUser.uid).get();
+                const data = doc.data();
+                currentUser = { ...currentUser, ...data };
+                
+                document.getElementById('providerWallet').textContent = '₹' + (data?.wallet || 0);
+                
+                if ((data?.wallet || 0) < settings.minWallet) {
+                    document.getElementById('walletWarning').classList.remove('hidden');
+                    document.getElementById('availableToggle').disabled = true;
+                } else {
+                    document.getElementById('walletWarning').classList.add('hidden');
+                    document.getElementById('availableToggle').disabled = false;
+                }
+                
+                document.getElementById('availableToggle').checked = data?.available || false;
+                document.getElementById('providerStatus').textContent = data?.available ? '● Available' : '● Offline';
+                document.getElementById('providerStatus').className = data?.available ? 'text-sm text-green-400' : 'text-sm text-gray-400';
+            } catch (error) {
+                console.error('Error loading provider data:', error);
+            }
+        }
+
+        async function toggleAvailability() {
+            const available = document.getElementById('availableToggle').checked;
+            try {
+                await db.collection('users').doc(currentUser.uid).update({ available: available });
+                document.getElementById('providerStatus').textContent = available ? '● Available' : '● Offline';
+                document.getElementById('providerStatus').className = available ? 'text-sm text-green-400' : 'text-sm text-gray-400';
+                showToast(available ? 'You are now available for jobs' : 'You are now offline');
+            } catch (error) {
+                showToast('Error: ' + error.message);
+            }
+        }
+
+        function renderProviderRequests(requests) {
+            const container = document.getElementById('providerRequests');
+            if (requests.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No new requests</p>';
+                return;
+            }
+            
+            let html = '';
+            requests.forEach(req => {
+                html += `
+                    <div class="card mb-3 border-l-4 border-yellow-500">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h4 class="font-bold text-white">${req.serviceName}</h4>
+                                <p class="text-xs text-gray-400">${req.distance} km away</p>
+                            </div>
+                            <span class="text-gold-text font-bold">${req.price}</span>
+                        </div>
+                        <p class="text-sm text-gray-300 mb-3">${req.description || 'No description'}</p>
+                        <div class="flex gap-2">
+                            <button class="flex-1 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold" onclick="acceptRequest('${req.id}')">Accept</button>
+                            <button class="flex-1 py-2 rounded-lg bg-white/10 text-white text-sm font-semibold" onclick="declineRequest('${req.id}')">Decline</button>
+                        </div>
+                    </div>
+                `;
             });
-        });
-        
-        // Initialize hearts
-        createHearts();
+            container.innerHTML = html;
+        }
+
+        function renderProviderJobs(jobs) {
+            const container = document.getElementById('providerJobs');
+            if (jobs.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No active jobs</p>';
+                return;
+            }
+            
+            let html = '';
+            jobs.forEach(job => {
+                const statusColor = job.status === 'arrived' ? 'text-green-400' : 'text-blue-400';
+                html += `
+                    <div class="card mb-3">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h4 class="font-bold text-white">${job.serviceName}</h4>
+                                <p class="text-xs ${statusColor}">${job.status.toUpperCase()}</p>
+                            </div>
+                            <span class="text-gold-text font-bold">${job.price}</span>
+                        </div>
+                        <p class="text-sm text-gray-300 mb-2"><i class="fas fa-user mr-2"></i>${job.customerName}</p>
+                        <p class="text-sm text-gray-400 mb-3"><i class="fas fa-phone mr-2"></i>${job.customerPhone || 'No phone'}</p>
+                        ${job.status === 'accepted' ? `
+                            <button class="w-full py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold" onclick="markArrived('${job.id}')">Mark Arrived</button>
+                        ` : ''}
+                        ${job.status === 'arrived' ? `
+                            <button class="w-full py-2 rounded-lg bg-green-600 text-white text-sm font-semibold" onclick="startJob('${job.id}')">Start Job</button>
+                        ` : ''}
+                        ${job.status === 'ongoing' ? `
+                            <button class="w-full py-2 rounded-lg bg-purple-600 text-white text-sm font-semibold" onclick="completeJob('${job.id}')">Complete Job</button>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        async function acceptRequest(bookingId) {
+            try {
+                await db.collection('bookings').doc(bookingId).update({
+                    status: 'accepted',
+                    providerId: currentUser.uid,
+                    providerName: currentUser.name,
+                    providerPhone: currentUser.phone || '',
+                    providerLocation: currentUser.location,
+                    acceptedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                showToast('Request accepted!');
+            } catch (error) {
+                showToast('Error: ' + error.message);
+            }
+        }
+
+        async function declineRequest(bookingId) {
+            // Just remove from UI, booking remains pending for others
+            showToast('Request declined');
+        }
+
+        async function markArrived(bookingId) {
+            try {
+                await db.collection('bookings').doc(bookingId).update({
+                    status: 'arrived',
+                    arrivedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                showToast('Marked as arrived');
+            } catch (error) {
+                showToast('Error: ' + error.message);
+            }
+        }
+
+        async function startJob(bookingId) {
+            try {
+                await db.collection('bookings').doc(bookingId).update({
+                    status: 'ongoing',
+                    startedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                showToast('Job started');
+            } catch (error) {
+                showToast('Error: ' + error.message);
+            }
+        }
+
+        async function completeJob(bookingId) {
+            const actualPrice = prompt('Enter actual price (₹):');
+            if (!actualPrice || isNaN(actualPrice)) return;
+            
+            try {
+                const bookingRef = db.collection('bookings').doc(bookingId);
+                const booking = await bookingRef.get();
+                const bookingData = booking.data();
+                
+                // Calculate commission
+                const commissionRate = settings.commission[bookingData.category] / 100;
+                const commission = Math.floor(parseInt(actualPrice) * commissionRate);
+                const providerAmount = parseInt(actualPrice) - commission;
+                
+                await db.runTransaction(async (transaction) => {
+                    // Update booking
+                    transaction.update(bookingRef, {
+                        status: 'completed',
+                        actualPrice: parseInt(actualPrice),
+                        commission: commission,
+                        completedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    // Update provider wallet
+                    const providerRef = db.collection('users').doc(currentUser.uid);
+                    const providerDoc = await transaction.get(providerRef);
+                    const currentWallet = providerDoc.data()?.wallet || 0;
+                    transaction.update(providerRef, {
+                        wallet: currentWallet + providerAmount,
+                        totalEarned: firebase.firestore.FieldValue.increment(providerAmount)
+                    });
+                    
+                    // Record transaction
+                    const txRef = db.collection('transactions').doc();
+                    transaction.set(txRef, {
+                        userId: currentUser.uid,
+                        type: 'credit',
+                        amount: providerAmount,
+                        description: `Payment for ${bookingData.serviceName}`,
+                        bookingId: bookingId,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+                
+                showToast(`Job completed! Earned ₹${providerAmount}`);
+            } catch (error) {
+                showToast('Error: ' + error.message);
+            }
+        }
+
+        async function withdrawMoney() {
+            const amount = prompt('Enter amount to withdraw (₹):');
+            if (!amount || isNaN(amount) || amount <= 0) return;
+            
+            if (parseInt(amount) > (currentUser.wallet || 0)) {
+                showToast('Insufficient balance');
+                return;
+            }
+            
+            try {
+                // In production, integrate with bank transfer/UPI
+                await db.runTransaction(async (transaction) => {
+                    const userRef = db.collection('users').doc(currentUser.uid);
+                    const userDoc = await transaction.get(userRef);
+                    const currentWallet = userDoc.data()?.wallet || 0;
+                    
+                    transaction.update(userRef, {
+                        wallet: currentWallet - parseInt(amount)
+                    });
+                    
+                    const txRef = db.collection('transactions').doc();
+                    transaction.set(txRef, {
+                        userId: currentUser.uid,
+                        type: 'debit',
+                        amount: -parseInt(amount),
+                        description: 'Withdrawal to bank',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+                
+                showToast('Withdrawal request submitted');
+                loadProviderData();
+            } catch (error) {
+                showToast('Error: ' + error.message);
+            }
+        }
+
+        function editWorkingHours() {
+            const hours = prompt('Enter working hours (e.g., 9 AM - 6 PM):', currentUser.workingHours || '9 AM - 6 PM');
+            if (hours) {
+                db.collection('users').doc(currentUser.uid).update({ workingHours: hours });
+                showToast('Working hours updated');
+            }
+        }
+
+        // ==================== LOCATION & MAP ====================
+        function getLocation() {
+            if (!navigator.geolocation) {
+                document.getElementById('locationText').textContent = 'Geolocation not supported';
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    document.getElementById('locationText').textContent = 'Location detected';
+                    
+                    // Update user location in DB
+                    if (currentUser) {
+                        db.collection('users').doc(currentUser.uid).update({
+                            location: userLocation,
+                            locationUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                },
+                (err) => {
+                    document.getElementById('locationText').textContent = 'Location access denied';
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+            );
+        }
+
+        function startLocationTracking() {
+            if (!navigator.geolocation) return;
+            
+            setInterval(() => {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const newLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                        db.collection('users').doc(currentUser.uid).update({
+                            location: newLocation,
+                            locationUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        
+                        // If on active job, update booking with provider location
+                        db.collection('bookings')
+                            .where('providerId', '==', currentUser.uid)
+                            .where('status', 'in', ['accepted', 'ongoing'])
+                            .get()
+                            .then(snapshot => {
+                                snapshot.forEach(doc => {
+                                    doc.ref.update({ providerLocation: newLocation });
+                                });
+                            });
+                    },
+                    null,
+                    { enableHighAccuracy: true }
+                );
+            }, settings.movementCheck * 1000);
+        }
+
+        async function loadNearbyProviders() {
+            // Load and display nearby providers on map (if map is open)
+            if (!map || !currentUser) return;
+            
+            const providersSnapshot = await db.collection('users')
+                .where('role', '==', 'provider')
+                .where('available', '==', true)
+                .get();
+            
+            markersLayer.clearLayers();
+            
+            providersSnapshot.forEach(doc => {
+                const provider = doc.data();
+                if (provider.location) {
+                    const marker = L.marker([provider.location.lat, provider.location.lng], {
+                        icon: L.divIcon({
+                            className: 'custom-provider-marker',
+                            html: `<div style="background: linear-gradient(135deg, #FFD700, #FFA500); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.3);"><i class="fas fa-user" style="color: #0a0a0a;"></i></div>`,
+                            iconSize: [40, 40],
+                            iconAnchor: [20, 20]
+                        })
+                    }).bindPopup(`
+                        <div style="padding: 10px; min-width: 200px;">
+                            <h4 style="margin: 0 0 8px 0; color: #0a0a0a;">${provider.name}</h4>
+                            <p style="margin: 0; color: #666; font-size: 12px;">${provider.services?.join(', ') || 'General Services'}</p>
+                        </div>
+                    `);
+                    markersLayer.addLayer(marker);
+                }
+            });
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // ==================== NOTIFICATIONS ====================
+        async function requestNotificationPermission() {
+            if (!('Notification' in window)) return;
+            
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                const token = await messaging.getToken();
+                if (token) {
+                    await db.collection('users').doc(currentUser.uid).update({
+                        fcmToken: token
+                    });
+                }
+            }
+        }
+
+        function sendNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: body,
+                    icon: '/icons/icon-192x192.png',
+                    badge: '/icons/icon-72x72.png'
+                });
+            }
+        }
+
+        async function sendFCMNotification(token, payload) {
+            // In production, send via your backend or Firebase Admin SDK
+            console.log('Sending FCM to:', token, payload);
+        }
+
+        // ==================== OFFLINE SUPPORT ====================
+        function setupOfflineDetection() {
+            window.addEventListener('online', () => {
+                document.getElementById('offlineIndicator').classList.remove('show');
+                showToast('Back online! Syncing...');
+                syncPendingData();
+            });
+            
+            window.addEventListener('offline', () => {
+                document.getElementById('offlineIndicator').classList.add('show');
+            });
+        }
+
+        async function syncPendingData() {
+            // Sync any pending operations from IndexedDB
+            // Implementation depends on your offline strategy
+        }
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function searchServices(query) {
+            const items = document.querySelectorAll('.service-card');
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(query.toLowerCase()) ? 'flex' : 'none';
+            });
+        }
+
+        async function logout() {
+            if (unsubscribeBookings) unsubscribeBookings();
+            if (unsubscribeRequests) unsubscribeRequests();
+            await auth.signOut();
+            location.reload();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW registered'))
+                    .catch(err => console.log('SW registration failed:', err));
+            });
+        }
     </script>
 </body>
-</html>'''
+</html>
